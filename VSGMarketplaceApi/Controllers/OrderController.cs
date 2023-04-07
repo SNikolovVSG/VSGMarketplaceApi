@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
@@ -10,163 +12,120 @@ namespace VSGMarketplaceApi.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private ApplicationDbContext dbContext;
+        private IConfiguration configuration;
 
-        public OrderController(ApplicationDbContext context)
+        public OrderController(IConfiguration configuration)
         {
-            this.dbContext = context;
+            this.configuration = configuration;
         }
 
+        //Works
         [Authorize]
         [HttpPost("~/Marketplace/Buy")]
-        public IActionResult Buy([FromBody] int code, int quantity, int userId)
+        public async Task<IActionResult> Buy([FromBody] NewOrderInputModel input)
         {
-            if (!CheckForQuantity(code, quantity))
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+
+            var item = await connection.QueryFirstAsync<Item>("select * from items where code = @Code", new { Code = input.code });
+
+            bool checkForQuantity = item.QuantityForSale <= input.quantity;
+            if (checkForQuantity)
             {
                 return BadRequest("Not enough quantities");
             }
 
-            var orderPrice = GetPrice(code, quantity);
-            var userEmail = GetUserEmail(userId);
-            var getName = GetName(code);
+            var orderPrice = item.Price * input.quantity;
+            var userEmail = await connection.QueryFirstAsync<string>("select email from users where id = @Id", new { Id = input.userId });
 
-            var order = new Order 
-            { 
-                Name = getName,
-                OrderDate = DateTime.Now.Date, 
-                UserId = userId,
-                Code = code, 
-                Quantity = quantity, 
-                Status = Constants.Pending, 
-                OrderedBy = userEmail, 
-                OrderPrice = orderPrice 
+            var order = new Order
+            {
+                Name = item.Name,
+                OrderDate = DateTime.Now.Date,
+                UserId = input.userId,
+                Code = input.code, //change to itemId!!!
+                Quantity = input.quantity,
+                Status = Constants.Pending,
+                OrderedBy = userEmail,
+                OrderPrice = orderPrice
             };
 
-            ReduceItemQuantity(code, quantity);
-
-            this.dbContext.Orders.Add(order);
-            this.dbContext.SaveChanges();
+            await connection.ExecuteAsync
+                ("update items set quantityForSale = @Count where code = @Code", new { Count = item.QuantityForSale - input.quantity, Code = input.code });
             return Ok();
         }
 
-
+        //works
         [Authorize]
-        [HttpGet("~/MyOrders")]
-        public ActionResult<List<MyOrdersViewModel>> MyOrders(int userId)
+        [HttpGet("~/MyOrders/{userId}")]
+        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromRoute] int userId)
         {
-            return GetMyOrders(userId);
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var orders = await connection.QueryAsync<Order>("SELECT Code, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId FROM [VSGMarketplace].[dbo].[Orders] AS orT  INNER JOIN Users as usS on usS.Email = orT.OrderedBy where usS.Id = @Id", new { Id = userId });
+            var myOrdersViewModel = orders.Select(x => new MyOrdersViewModel
+            {
+                Name = x.Name,
+                OrderDate = x.OrderDate,
+                OrderPrice = x.OrderPrice,
+                Quantity = x.Quantity,
+                Status = x.Status
+            });
+
+
+            ;
+            return Ok(myOrdersViewModel);
         }
 
+        //works
         [Authorize]
         [HttpGet("~/Order/{id}")]
-        public ActionResult<Order> ById(int code)
+        public async Task<ActionResult<Order>> ById([FromRoute] int id)
         {
-            return GetOrder(code);
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var order = await connection.QueryFirstAsync<Order>("select * from orders where id = @Id", new { Id = id });
+
+            return Ok(order);
         }
 
-        //Cancel an order
+        //works
         [Authorize]
-        [HttpDelete("~/MyOrders/DeleteOrder")]
-        public IActionResult Delete([FromBody] int id) 
+        [HttpDelete("~/MyOrders/DeleteOrder/{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            this.dbContext.Orders.Where(x => x.Id == id).ExecuteDelete();
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            await connection.ExecuteAsync("delete from orders where id = @Id", new { Id = id });
 
-            return this.Redirect("/");
-        }
-        
-        //Pending Orders
-        [HttpGet("~/PendingOrders")]
-        [Authorize(Roles = "Administrator")]
-        public ActionResult<List<PendingOrderViewModel>> PendingOrders()
-        {
-            return GetPendingOrders();
-        }
-
-        [Authorize(Roles = "Administrator")]
-        [HttpPut("~/PendingOrders/CompleteOrder")]
-        public IActionResult Complete([FromBody] int id)
-        {
-            SetFinished(id);
             return Ok();
         }
 
-        [NonAction]
-        public void SetFinished(int id)
+        //Works
+        [HttpGet("~/PendingOrders")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
-            this.dbContext.Orders.Where(x => x.Id == id).First().Status = Constants.Finished;
-            this.dbContext.SaveChanges();
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var orders = await connection.QueryAsync<Order>("select * from orders where status = @Pending", new { Pending = Constants.Pending });
+            var pendingOrders = orders.Select(x => new PendingOrderViewModel
+            {
+                Code = x.Code,
+                OrderBy = x.OrderedBy,
+                OrderDate = x.OrderDate,
+                OrderPrice = x.OrderPrice,
+                Quantity = x.Quantity,
+                Status = x.Status
+            });
+
+            return Ok(pendingOrders);
         }
 
-        [NonAction]
-        public void ReduceItemQuantity(int code, int quantity)
+        //works
+        [Authorize(Roles = "Administrator")]
+        [HttpPut("~/PendingOrders/CompleteOrder/{id}")]
+        public async Task<IActionResult> Complete([FromRoute] int id)
         {
-            var item = GetItem(code);
-            item.QuantityForSale -= quantity; 
-            this.dbContext.SaveChanges();
-        }
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var order = await connection.ExecuteAsync("update Orders set status = @Status where id = @Id", new { Status = Constants.Finished, Id = id });
 
-        [NonAction]
-        public Item GetItem(int code)
-        {
-            return this.dbContext.Items.Where(x => x.Code == code).First();
-        }
-
-        [NonAction]
-        public bool CheckForQuantity(int code, int quantity)
-        {
-            return this.dbContext.Items.Where(x => x.Code == code).First().QuantityForSale > quantity;
-        }
-
-        [NonAction]
-        public double GetPrice(int code, int quantity)
-        {
-            return this.dbContext.Items.Where(x => x.Code == code).First().Price * quantity;
-        }
-
-        [NonAction]
-        public string GetUserEmail(int userId)
-        {
-            return this.dbContext.Users.Where(x => x.Id == userId).First().Email;
-        }
-
-        [NonAction]
-        public List<PendingOrderViewModel> GetPendingOrders()
-        {
-            return this.dbContext.Orders.Where(x => x.Status == Constants.Pending)
-                .Select(x => new PendingOrderViewModel
-                {
-                    Code = x.Code,
-                    OrderBy = x.OrderedBy,
-                    OrderDate = x.OrderDate,
-                    OrderPrice = x.OrderPrice,
-                    Quantity = x.Quantity,
-                    Status = x.Status
-                }).ToList();
-        }
-
-        [NonAction]
-        private List<MyOrdersViewModel> GetMyOrders(int userId)
-        {
-            return this.dbContext.Orders.Where(x => x.UserId == userId)
-                .Select(x => new MyOrdersViewModel
-                {
-                    Name = x.Name,
-                    OrderDate = x.OrderDate,
-                    OrderPrice = x.OrderPrice,
-                    Quantity = x.Quantity,
-                    Status = x.Status
-                }).ToList();
-        }
-
-        [NonAction]
-        private string GetName(int code)
-        {
-            return this.dbContext.Items.Where(x => x.Code == code).First().Name;
-        }
-
-        private Order GetOrder(int id) 
-        {
-            return this.dbContext.Orders.Where(x => x.Id == id).First();
+            return Ok();
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -16,20 +18,18 @@ namespace VSGMarketplaceApi.Controllers
     public class LoginController : ControllerBase
     {
         private IConfiguration config;
-        private readonly ApplicationDbContext dbContext;
 
-        public LoginController(IConfiguration configuration, ApplicationDbContext dbContext)
+        public LoginController(IConfiguration configuration)
         {
             this.config = configuration;
-            this.dbContext = dbContext;
         }
 
 
         [AllowAnonymous]
         [HttpPost("~/Login")]
-        public IActionResult Login([FromBody] UserLogin userLogin)
+        public async Task<IActionResult> Login([FromBody] UserLogin userLogin)
         {
-            var user = Authenticate(userLogin);
+            var user = await Authenticate(userLogin);
 
             if (user != null)
             {
@@ -63,14 +63,13 @@ namespace VSGMarketplaceApi.Controllers
                 expires: DateTime.Now.AddMinutes(15),
                 signingCredentials: credentials);
 
-            //dont add to HttpContext
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private User Authenticate(UserLogin userLogin)
+        private async Task<User> Authenticate(UserLogin userLogin)
         {
-            //change it to use DB
-            var currentUser = this.dbContext.Users.Where(x => x.Email == userLogin.Email && x.Password == userLogin.Password).First();
+            using var connection = new SqlConnection(config.GetConnectionString("DefaultConnection"));
+            var currentUser = await connection.QueryFirstAsync<User>("select * from users where @Email = email and @Password = password", userLogin);
 
             if (currentUser != null) { return currentUser; }
 

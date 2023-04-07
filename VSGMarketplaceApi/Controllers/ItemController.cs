@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
@@ -10,99 +12,114 @@ namespace VSGMarketplaceApi.Controllers
     [ApiController]
     public class ItemController : ControllerBase
     {
-        private ApplicationDbContext dbContext;
+        private IConfiguration configuration;
 
-        public ItemController(ApplicationDbContext dbContext)
+        public ItemController(IConfiguration config)
         {
-            this.dbContext = dbContext;
+            this.configuration = config;
         }
 
+        //Works
         [Authorize(Roles = "Administrator")]
         [HttpPost("~/AddItem")]
-        public IActionResult Add([FromBody] Item item)
+        public async Task<IActionResult> AddAsync([FromBody] ItemAddDTO item)
         {
-            this.dbContext.Items.Add(item);
-            this.dbContext.SaveChanges();
+            if (item == null || !ModelState.IsValid) 
+            {
+                return BadRequest();
+            }
+
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            await connection.ExecuteAsync("insert into items (code, name, price, category, quantity, quantityForSale, description) values (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description)", item);
             return Ok();
         }
 
+        //works
         [Authorize(Roles = "Administrator")]
-        [HttpPut("~/Edit")]
-        public IActionResult Edit([FromBody] Item item)
+        [HttpPut("~/Edit/{id}")]
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromBody] Item item)
         {
-            var oldItem = GetItem(item.Code);
-            oldItem = item;
-            this.dbContext.SaveChanges();
+            if (!ModelState.IsValid) 
+            {
+                return BadRequest();
+            }
+
+            item.Id = id;
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            await connection.ExecuteAsync
+                ("update items set code = @Code, " +
+                "name = @Name, " +
+                "price = @Price, " +
+                "category = @Category, " +
+                "quantity = @Quantity, " +
+                "quantityForSale = @QuantityForSale, " +
+                "description = @Description " +
+                "where id = @Id", item);
+
             return Ok();
         }
 
+        //Works
         [Authorize(Roles = "Administrator")]
-        [HttpDelete("~/DeleteItem")]
-        public IActionResult Delete([FromBody] int code)
+        [HttpDelete("~/DeleteItem/{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            DeleteItem(code);
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            await connection.ExecuteAsync("delete from items where id = @Id", new { Id = id });
 
             return Ok();
         }
 
+        //Works
         [Authorize(Roles = "Administrator")]
         [HttpGet("~/Inventory")]
-        public ActionResult<List<InventoryItemViewModel>> Inventory()
+        public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            return GetInventoryItemViewModels();
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")); //that's the new command to get connection string
+            var items = await connection.QueryAsync<Item>("select * from Items");
+            var inventoryViewItems = items.Select(x => new InventoryItemViewModel
+            {
+                Category = x.Category,
+                Code = x.Code,
+                QuantityForSale = x.QuantityForSale,
+                Name = x.Name,
+                Quantity = x.Quantity,
+            });
+
+            return Ok(inventoryViewItems);
         }
 
-        //[Authorize]
+        //Works
+        [Authorize]
         [HttpGet("~/Marketplace")]
-        public ActionResult<List<MarketplaceItemViewModel>> Marketplace()
+        public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
-            return GetMarketplaceItemViewModels();
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")); //that's the new command to get connection string
+            var items = await connection.QueryAsync<Item>("select * from Items where quantityForSale > 0");
+            var marketplaceItems = items.Select(x => new MarketplaceItemViewModel
+            {
+                Category = x.Category,
+                Code = x.Code,
+                Price = x.Price,
+                QuantityForSale = x.QuantityForSale
+            });
+
+            return Ok(marketplaceItems);
         }
 
+        //Works
         [Authorize]
         [HttpGet("~/Item/{id}")]
-        public ActionResult<Item> ById(int code)
+        public async Task<ActionResult<Item>> ById([FromRoute] int id)
         {
-            return GetItem(code);
-        }
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var item = await connection.QueryFirstAsync<Item>("select * from Items where id = @Id", new { Id = id });
+            if (item == null || item.QuantityForSale <= 0) 
+            {
+                return BadRequest();
+            }
 
-        [NonAction]
-        private ActionResult<List<MarketplaceItemViewModel>> GetMarketplaceItemViewModels()
-        {
-            return this.dbContext.Items
-                .Select(x => new MarketplaceItemViewModel
-                {
-                    Category = x.Category,
-                    Code = x.Code,
-                    QuantityForSale = x.QuantityForSale,
-                    Price = x.Price
-                }).ToList();
-        }
-
-        [NonAction]
-        private List<InventoryItemViewModel> GetInventoryItemViewModels()
-        {
-            return this.dbContext.Items
-                .Select(x => new InventoryItemViewModel 
-                { 
-                    Category = x.Category, 
-                    Name = x.Name, 
-                    Code = x.Code, 
-                    Quantity = x.Quantity, 
-                    QuantityForSale = x.QuantityForSale 
-                }).ToList();
-        }
-
-        [NonAction]
-        private void DeleteItem(int code)
-        {
-            this.dbContext.Items.Where(x => x.Code == code).ExecuteDelete();
-        }
-
-        [NonAction]
-        public Item GetItem(int code)
-        {
-            return this.dbContext.Items.Where(x => x.Code == code).First();
+            return Ok(item);
         }
     }
 }
