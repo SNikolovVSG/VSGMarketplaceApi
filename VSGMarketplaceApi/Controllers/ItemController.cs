@@ -24,7 +24,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPost("~/AddItem")]
         public async Task<IActionResult> AddAsync([FromBody] ItemAddDTO item)
         {
-            if (item == null || !ModelState.IsValid) 
+            if (item == null || !ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -39,7 +39,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/Edit/{id}")]
         public async Task<IActionResult> Edit([FromRoute] int id, [FromBody] Item item)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -114,7 +114,7 @@ namespace VSGMarketplaceApi.Controllers
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
             var item = await connection.QueryFirstAsync<Item>("select * from Items where id = @Id", new { Id = id });
-            if (item == null || item.QuantityForSale <= 0) 
+            if (item == null || item.QuantityForSale <= 0)
             {
                 return BadRequest();
             }

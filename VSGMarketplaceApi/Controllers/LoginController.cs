@@ -45,6 +45,15 @@ namespace VSGMarketplaceApi.Controllers
             return NotFound("User not found");
         }
 
+
+        [Authorize]
+        [HttpPost("~/Logout")]
+        public ActionResult Logout()
+        {
+            Response.Headers.Remove("Authorization");
+            return Ok();
+        }
+
         private string Generate(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
