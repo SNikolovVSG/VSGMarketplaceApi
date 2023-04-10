@@ -97,3 +97,5 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Micros
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Newtonsoft.Json.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\AutoMapper.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

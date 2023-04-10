@@ -1,8 +1,11 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
+using VSGMarketplaceApi.Profiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,17 @@ builder.Services.AddAuthorization();
 
 //json add
 builder.Services.AddControllers().AddNewtonsoftJson();
+
+//auto mapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+var config = new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile<MappingProfile>();
+});
+
+IMapper mapper = config.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 var app = builder.Build();
 

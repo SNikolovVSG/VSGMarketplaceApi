@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using AutoMapper;
+using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -12,11 +13,13 @@ namespace VSGMarketplaceApi.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private IConfiguration configuration;
+        private readonly IConfiguration configuration;
+        private readonly IMapper mapper;
 
-        public OrderController(IConfiguration configuration)
+        public OrderController(IConfiguration configuration, IMapper mapper)
         {
             this.configuration = configuration;
+            this.mapper = mapper;
         }
 
         //Works
@@ -61,18 +64,19 @@ namespace VSGMarketplaceApi.Controllers
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
             var orders = await connection.QueryAsync<Order>("SELECT Code, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId FROM [VSGMarketplace].[dbo].[Orders] AS orT  INNER JOIN Users as usS on usS.Email = orT.OrderedBy where usS.Id = @Id", new { Id = userId });
-            var myOrdersViewModel = orders.Select(x => new MyOrdersViewModel
-            {
-                Name = x.Name,
-                OrderDate = x.OrderDate,
-                OrderPrice = x.OrderPrice,
-                Quantity = x.Quantity,
-                Status = x.Status
-            });
 
+            var myOrdersViewModelMap = orders.Select(x => mapper.Map<MyOrdersViewModel>(x)).ToList();
 
-            ;
-            return Ok(myOrdersViewModel);
+            //var myOrdersViewModel = orders.Select(x => new MyOrdersViewModel
+            //{
+            //    Name = x.Name,
+            //    OrderDate = x.OrderDate,
+            //    OrderPrice = x.OrderPrice,
+            //    Quantity = x.Quantity,
+            //    Status = x.Status
+            //});
+
+            return Ok(myOrdersViewModelMap);
         }
 
         //works
@@ -104,17 +108,20 @@ namespace VSGMarketplaceApi.Controllers
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
             var orders = await connection.QueryAsync<Order>("select * from orders where status = @Pending", new { Pending = Constants.Pending });
-            var pendingOrders = orders.Select(x => new PendingOrderViewModel
-            {
-                Code = x.Code,
-                OrderBy = x.OrderedBy,
-                OrderDate = x.OrderDate,
-                OrderPrice = x.OrderPrice,
-                Quantity = x.Quantity,
-                Status = x.Status
-            });
+            
+            var pendingOrdersMap = orders.Select(x => mapper.Map<PendingOrderViewModel>(x)).ToList();
 
-            return Ok(pendingOrders);
+            //var pendingOrders = orders.Select(x => new PendingOrderViewModel
+            //{
+            //    Code = x.Code,
+            //    OrderBy = x.OrderedBy,
+            //    OrderDate = x.OrderDate,
+            //    OrderPrice = x.OrderPrice,
+            //    Quantity = x.Quantity,
+            //    Status = x.Status
+            //});
+
+            return Ok(pendingOrdersMap);
         }
 
         //works

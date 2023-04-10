@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using AutoMapper;
+using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -13,10 +14,12 @@ namespace VSGMarketplaceApi.Controllers
     public class ItemController : ControllerBase
     {
         private IConfiguration configuration;
+        private readonly IMapper mapper;
 
-        public ItemController(IConfiguration config)
+        public ItemController(IConfiguration config, IMapper mapper)
         {
             this.configuration = config;
+            this.mapper = mapper;
         }
 
         //Works
@@ -77,16 +80,19 @@ namespace VSGMarketplaceApi.Controllers
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")); //that's the new command to get connection string
             var items = await connection.QueryAsync<Item>("select * from Items");
-            var inventoryViewItems = items.Select(x => new InventoryItemViewModel
-            {
-                Category = x.Category,
-                Code = x.Code,
-                QuantityForSale = x.QuantityForSale,
-                Name = x.Name,
-                Quantity = x.Quantity,
-            });
 
-            return Ok(inventoryViewItems);
+            var inventoryViewItemsMAP = items.Select(x => mapper.Map<InventoryItemViewModel>(x)).ToList();
+
+            //var inventoryViewItems = items.Select(x => new InventoryItemViewModel
+            //{
+            //    Category = x.Category,
+            //    Code = x.Code,
+            //    QuantityForSale = x.QuantityForSale,
+            //    Name = x.Name,
+            //    Quantity = x.Quantity,
+            //});
+
+            return Ok(inventoryViewItemsMAP);
         }
 
         //Works
@@ -96,17 +102,21 @@ namespace VSGMarketplaceApi.Controllers
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")); //that's the new command to get connection string
             var items = await connection.QueryAsync<Item>("select * from Items where quantityForSale > 0");
-            var marketplaceItems = items.Select(x => new MarketplaceItemViewModel
-            {
-                Category = x.Category,
-                Code = x.Code,
-                Price = x.Price,
-                QuantityForSale = x.QuantityForSale
-            });
+            
+            var marketplaceItemsMap = items.Select(x => mapper.Map<MarketplaceItemViewModel>(x)).ToList();
 
-            return Ok(marketplaceItems);
+            //var marketplaceItems = items.Select(x => new MarketplaceItemViewModel
+            //{
+            //    Category = x.Category,
+            //    Code = x.Code,
+            //    Price = x.Price,
+            //    QuantityForSale = x.QuantityForSale
+            //});
+
+            return Ok(marketplaceItemsMap);
         }
 
+        //check if it don't need dto
         //Works
         [Authorize]
         [HttpGet("~/Item/{id}")]

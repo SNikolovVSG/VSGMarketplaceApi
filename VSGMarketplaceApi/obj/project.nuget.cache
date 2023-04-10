@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "8NyCED37OgifNv2DeHfKQvITEZufDcxXhweQYKoZfUvvrp1rGXWuH+vD7ePyOZ+Qi/3yT/xU4oPWj4qTgNIZNA==",
+  "dgSpecHash": "eKG6xu3dncHYpVhMMTWOXVf3mmy5bW+jOiUQhC7g0lBA3rJEuzW8fprLy3bZOgPYoTMyj9hGtXBFZ4B0ety81w==",
   "success": true,
   "projectFilePath": "D:\\Resources\\vsg api\\VSGMarketplaceApi\\VSGMarketplaceApi\\VSGMarketplaceApi.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\SNikolov\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
+    "C:\\Users\\SNikolov\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\dapper\\2.0.123\\dapper.2.0.123.nupkg.sha512",
