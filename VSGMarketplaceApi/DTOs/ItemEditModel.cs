@@ -1,6 +1,6 @@
 ﻿namespace VSGMarketplaceApi.DTOs
 {
-    public class ItemAddDTO
+    public class ItemEditModel
     {
         public int Code { get; set; }
 

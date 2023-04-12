@@ -22,10 +22,10 @@ namespace VSGMarketplaceApi.Controllers
             this.mapper = mapper;
         }
 
-        //Works
+        //works
         [Authorize(Roles = "Administrator")]
         [HttpPost("~/AddItem")]
-        public async Task<IActionResult> AddAsync([FromBody] ItemAddDTO item)
+        public async Task<IActionResult> AddAsync([FromBody] ItemAddModel item)
         {
             if (item == null || !ModelState.IsValid)
             {
@@ -33,97 +33,77 @@ namespace VSGMarketplaceApi.Controllers
             }
 
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            await connection.ExecuteAsync("insert into items (code, name, price, category, quantity, quantityForSale, description) values (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description)", item);
+            await connection.ExecuteAsync("insert into items (name, price, category, quantity, quantityForSale, description) values (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description)", item);
             return Ok();
         }
 
         //works
         [Authorize(Roles = "Administrator")]
-        [HttpPut("~/Edit/{id}")]
-        public async Task<IActionResult> Edit([FromRoute] int id, [FromBody] Item item)
+        [HttpPut("~/Edit/{code}")]
+        public async Task<IActionResult> Edit([FromRoute] int code, [FromBody] ItemAddModel item)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
-            item.Id = id;
+            var editItem = mapper.Map<Item>(item);
+            editItem.Code = code;
+
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
             await connection.ExecuteAsync
-                ("update items set code = @Code, " +
+                ("update items set " +
                 "name = @Name, " +
                 "price = @Price, " +
                 "category = @Category, " +
                 "quantity = @Quantity, " +
                 "quantityForSale = @QuantityForSale, " +
                 "description = @Description " +
-                "where id = @Id", item);
+                "where code = @code", editItem);
 
             return Ok();
         }
 
-        //Works
+        //works
         [Authorize(Roles = "Administrator")]
-        [HttpDelete("~/DeleteItem/{id}")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
+        [HttpDelete("~/DeleteItem/{code}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            await connection.ExecuteAsync("delete from items where id = @Id", new { Id = id });
+            await connection.ExecuteAsync("delete from items where code = @Code", new { Code = code });
 
             return Ok();
         }
 
-        //Works
+        //works
         [Authorize(Roles = "Administrator")]
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")); //that's the new command to get connection string
-            var items = await connection.QueryAsync<Item>("select * from Items");
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var items = await connection.QueryAsync<InventoryItemViewModel>("select * from Items");
 
-            var inventoryViewItemsMAP = items.Select(x => mapper.Map<InventoryItemViewModel>(x)).ToList();
-
-            //var inventoryViewItems = items.Select(x => new InventoryItemViewModel
-            //{
-            //    Category = x.Category,
-            //    Code = x.Code,
-            //    QuantityForSale = x.QuantityForSale,
-            //    Name = x.Name,
-            //    Quantity = x.Quantity,
-            //});
-
-            return Ok(inventoryViewItemsMAP);
+            return Ok(items);
         }
 
-        //Works
+        //works
         [Authorize]
         [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")); //that's the new command to get connection string
-            var items = await connection.QueryAsync<Item>("select * from Items where quantityForSale > 0");
+            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var items = await connection.QueryAsync<MarketplaceItemViewModel>("select * from Items where quantityForSale > 0");
             
-            var marketplaceItemsMap = items.Select(x => mapper.Map<MarketplaceItemViewModel>(x)).ToList();
-
-            //var marketplaceItems = items.Select(x => new MarketplaceItemViewModel
-            //{
-            //    Category = x.Category,
-            //    Code = x.Code,
-            //    Price = x.Price,
-            //    QuantityForSale = x.QuantityForSale
-            //});
-
-            return Ok(marketplaceItemsMap);
+            return Ok(items);
         }
 
-        //check if it don't need dto
-        //Works
+        //works
         [Authorize]
-        [HttpGet("~/Item/{id}")]
-        public async Task<ActionResult<Item>> ById([FromRoute] int id)
+        [HttpGet("~/Item/{code}")]
+        public async Task<ActionResult<Item>> ById([FromRoute] int code)
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var item = await connection.QueryFirstAsync<Item>("select * from Items where id = @Id", new { Id = id });
+            var item = await connection.QueryFirstAsync<Item>("select * from Items where code = @Code", new { Code = code });
             if (item == null || item.QuantityForSale <= 0)
             {
                 return BadRequest();

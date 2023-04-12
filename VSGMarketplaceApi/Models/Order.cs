@@ -4,10 +4,11 @@ namespace VSGMarketplaceApi.Models
 {
     public class Order
     {
-        public int Id { get; set; }
-
         [Required]
         public int Code { get; set; }
+
+        [Required]
+        public int ItemCode { get; set; }
 
         [Required]
         [MinLength(3)]
@@ -34,5 +35,8 @@ namespace VSGMarketplaceApi.Models
 
         [Required]
         public int UserId { get; set; }
+
+        [Required]
+        public bool IsDeleted { get; set; }
     }
 }

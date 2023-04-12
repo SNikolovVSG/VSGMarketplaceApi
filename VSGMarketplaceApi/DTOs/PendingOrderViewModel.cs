@@ -8,7 +8,7 @@
 
         public double OrderPrice { get; set; }
 
-        public string OrderBy { get; set; }
+        public string OrderedBy { get; set; }
 
         public DateTime OrderDate { get; set; }
 

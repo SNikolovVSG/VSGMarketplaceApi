@@ -8,7 +8,7 @@ namespace VSGMarketplaceApi.Profiles
     {
         public MappingProfile()
         {
-            CreateMap<ItemAddDTO, Item>();
+            CreateMap<ItemAddModel, Item>();
 
             CreateMap<Item, ItemViewModel>();
             CreateMap<Item, InventoryItemViewModel>();
@@ -17,7 +17,7 @@ namespace VSGMarketplaceApi.Profiles
             CreateMap<Order, MyOrdersViewModel>();
             CreateMap<Order, PendingOrderViewModel>();
 
-            CreateMap<NewOrderInputModel, Order>();
+            CreateMap<NewOrderAddModel, Order>();
         }
 
     }
