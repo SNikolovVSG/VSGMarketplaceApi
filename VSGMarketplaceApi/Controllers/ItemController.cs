@@ -99,11 +99,11 @@ namespace VSGMarketplaceApi.Controllers
 
         //works
         [Authorize]
-        [HttpGet("~/Item/{code}")]
-        public async Task<ActionResult<Item>> ById([FromRoute] int code)
+        [HttpGet("~/Marketplace/{code}")]
+        public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int code)
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var item = await connection.QueryFirstAsync<Item>("select * from Items where code = @Code", new { Code = code });
+            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>("select * from Items where code = @Code", new { Code = code });
             if (item == null || item.QuantityForSale <= 0)
             {
                 return BadRequest();

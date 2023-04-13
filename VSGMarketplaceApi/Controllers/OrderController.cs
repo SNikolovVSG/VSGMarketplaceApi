@@ -14,12 +14,12 @@ namespace VSGMarketplaceApi.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IConfiguration configuration;
-        private readonly IMapper mapper;
+        //private readonly IMapper mapper;
 
-        public OrderController(IConfiguration configuration, IMapper mapper)
+        public OrderController(IConfiguration configuration/*, IMapper mapper*/)
         {
             this.configuration = configuration;
-            this.mapper = mapper;
+            //this.mapper = mapper;
         }
 
         //works
