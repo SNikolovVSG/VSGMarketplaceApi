@@ -3,5 +3,7 @@
     public interface IUnitOfWork
     {
         IOrderRepository Orders { get; }
+
+        IItemRepository Items { get; }
     }
 }

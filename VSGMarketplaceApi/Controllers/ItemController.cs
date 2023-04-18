@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
+using VSGMarketplaceApi.Repositories.Interfaces;
 
 namespace VSGMarketplaceApi.Controllers
 {
@@ -15,11 +16,13 @@ namespace VSGMarketplaceApi.Controllers
     {
         private IConfiguration configuration;
         private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ItemController(IConfiguration config, IMapper mapper)
+        public ItemController(IUnitOfWork unitOfWork, IConfiguration config, IMapper mapper)
         {
             this.configuration = config;
             this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         //works
@@ -27,14 +30,11 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromBody] ItemAddModel item)
         {
-            if (item == null || !ModelState.IsValid)
-            {
-                return BadRequest();
-            }
+            if (item == null || !ModelState.IsValid) { return BadRequest(); }
 
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            await connection.ExecuteAsync("insert into items (name, price, category, quantity, quantityForSale, description) values (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description)", item);
-            return Ok();
+            var result = await unitOfWork.Items.AddAsync(item);
+            if (result > 0) { return Ok(); }
+            return BadRequest();
         }
 
         //works
@@ -47,21 +47,9 @@ namespace VSGMarketplaceApi.Controllers
                 return BadRequest();
             }
 
-            var editItem = mapper.Map<Item>(item);
-            editItem.Code = code;
-
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            await connection.ExecuteAsync
-                ("update items set " +
-                "name = @Name, " +
-                "price = @Price, " +
-                "category = @Category, " +
-                "quantity = @Quantity, " +
-                "quantityForSale = @QuantityForSale, " +
-                "description = @Description " +
-                "where code = @code", editItem);
-
-            return Ok();
+            var result = await unitOfWork.Items.UpdateAsync(item, code);
+            if (result > 0) { return Ok(); };
+            return BadRequest();
         }
 
         //works
@@ -80,9 +68,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var items = await connection.QueryAsync<InventoryItemViewModel>("select * from Items");
-
+            var items = await unitOfWork.Items.GetInventoryItemsAsync();
             return Ok(items);
         }
 
@@ -91,9 +77,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var items = await connection.QueryAsync<MarketplaceItemViewModel>("select * from Items where quantityForSale > 0");
-            
+            var items = await unitOfWork.Items.GetMarketplaceItemsAsync();
             return Ok(items);
         }
 
@@ -102,13 +86,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Marketplace/{code}")]
         public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int code)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>("select * from Items where code = @Code", new { Code = code });
-            if (item == null || item.QuantityForSale <= 0)
-            {
-                return BadRequest();
-            }
-
+            var item = await unitOfWork.Items.GetMarketplaceItemAsync(code);
             return Ok(item);
         }
     }

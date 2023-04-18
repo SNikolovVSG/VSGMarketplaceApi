@@ -75,8 +75,8 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)
         {
-            var result = unitOfWork.Orders.CompleteAsync(code);
-            if (result.Exception != null) { return BadRequest(); }
+            var result = await unitOfWork.Orders.CompleteAsync(code);
+            if (result == 0) { return BadRequest(); }
             return Ok();
         }
     }
