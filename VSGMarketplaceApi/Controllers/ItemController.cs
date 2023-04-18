@@ -24,7 +24,7 @@ namespace VSGMarketplaceApi.Controllers
 
         //works
         [Authorize(Roles = "Administrator")]
-        [HttpPost("~/AddItem")]
+        [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromBody] ItemAddModel item)
         {
             if (item == null || !ModelState.IsValid)
@@ -39,7 +39,7 @@ namespace VSGMarketplaceApi.Controllers
 
         //works
         [Authorize(Roles = "Administrator")]
-        [HttpPut("~/Edit/{code}")]
+        [HttpPut("~/Inventory/Modify/{code}")]
         public async Task<IActionResult> Edit([FromRoute] int code, [FromBody] ItemAddModel item)
         {
             if (!ModelState.IsValid)

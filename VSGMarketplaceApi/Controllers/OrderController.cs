@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
+using VSGMarketplaceApi.Repositories.Interfaces;
 
 namespace VSGMarketplaceApi.Controllers
 {
@@ -13,114 +14,51 @@ namespace VSGMarketplaceApi.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private readonly IConfiguration configuration;
-        //private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public OrderController(IConfiguration configuration/*, IMapper mapper*/)
+        public OrderController(IUnitOfWork unitOfWork)
         {
-            this.configuration = configuration;
-            //this.mapper = mapper;
+            this.unitOfWork = unitOfWork; //ExceptionHandling => if result = 0 => lo6o bace
         }
 
-        //works
+        //works exceptions ok
         [Authorize]
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var result = await unitOfWork.Orders.AddAsync(input);
 
-            var item = await connection.QueryFirstAsync<Item>("select * from items where code = @Code", new { Code = input.ItemCode });
-
-            bool checkForQuantity = item.QuantityForSale < input.Quantity;
-            if (checkForQuantity)
-            {
-                return BadRequest("Not enough quantities");
-            }
-
-            var orderPrice = item.Price * input.Quantity;
-            var userEmail = await connection.QueryFirstAsync<string>("select email from users where id = @Id", new { Id = input.UserId });
-
-            var order = new Order
-            {
-                ItemCode = input.ItemCode,
-                Name = item.Name,
-                Quantity = input.Quantity,
-                OrderPrice = orderPrice,
-                OrderedBy = userEmail,
-                OrderDate = DateTime.Now.Date,
-                Status = Constants.Pending,
-                UserId = input.UserId,
-                IsDeleted = false,
-            };
-
-            await connection.ExecuteAsync
-                ("insert into Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId, IsDeleted) values (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @UserId, @IsDeleted)", order);
-
-            await connection.ExecuteAsync
-                ("update items set quantityForSale = @Count where code = @Code", new { Count = item.QuantityForSale - input.Quantity, Code = input.ItemCode });
-            return Ok();
+            if (result > 0) { return Ok(); }
+            return BadRequest();
         }
 
-        //works
+        //works exceptions ok
         [Authorize]
-        [HttpGet("~/MyOrders/{userId}")]
-        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromRoute] int userId)
+        [HttpGet("~/MyOrders")]
+        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromBody] int userId)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var orders = await connection.QueryAsync<MyOrdersViewModel>
-                ("SELECT ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId FROM [VSGMarketplace].[dbo].[Orders] AS orT  INNER JOIN Users as usS on usS.Email = orT.OrderedBy where usS.Id = @Id and IsDeleted = 0", new { Id = userId });
-
-            return Ok(orders);
+            var result = await unitOfWork.Orders.GetByUserId(userId);
+            return Ok(result);
         }
 
-        //works
+        //works exceptions ok
         [Authorize]
-        [HttpGet("~/Order/{code}")]                                                                                                     
+        [HttpGet("~/PendingOrder/{code}")]
         public async Task<ActionResult<Order>> ById([FromRoute] int code)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var order = await connection.QueryFirstAsync<Order>("select * from orders where code = @Code and IsDeleted = 0", new { Code = code });
-
-            return Ok(order);
+            var result = await unitOfWork.Orders.GetByCodeAsync(code);
+            return Ok(result);
         }
 
-        //works
+        //works exception ok
         [Authorize]
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            var result = await unitOfWork.Orders.DeleteAsync(code, userId);
 
-            ;
-
-            try
-            {
-                var order = await connection.QueryFirstAsync<Order>("Select * from orders where code = @Code and IsDeleted = 0", new { Code = code });
-
-                if (order == null && order.UserId != userId)
-                {
-                    return BadRequest();
-                }
-
-                if (order.Status == Constants.Pending)
-                {
-                    var item = await connection.QueryFirstAsync<Item>("Select * from items where code = @Code", new { Code = order.ItemCode });
-
-                    if (item == null) { return BadRequest(); }
-
-                    item.QuantityForSale += order.Quantity;
-
-                    await connection.ExecuteAsync("update items set QuantityForSale = @QuantityForSale where Code = @Code", item);
-                }
-
-                await connection.ExecuteAsync("update orders set IsDeleted = 1 where code = @Code", new { Code = code });
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-
-            return Ok();
+            if (result > 0) { return Ok(); }
+            return BadRequest();
         }
 
         //works
@@ -128,20 +66,17 @@ namespace VSGMarketplaceApi.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var orders = await connection.QueryAsync<PendingOrderViewModel>("select * from orders where status = @Pending and IsDeleted = 0", new { Pending = Constants.Pending });
-
+            var orders = await unitOfWork.Orders.GetAllPendingOrdersAsync();
             return Ok(orders);
         }
 
         //works
         [Authorize(Roles = "Administrator")]
-        [HttpPut("~/PendingOrders/CompleteOrder/{code}")]
+        [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var order = await connection.ExecuteAsync("update Orders set status = @Status where code = @Code and IsDeleted = 0", new { Status = Constants.Finished, Code = code });
-
+            var result = unitOfWork.Orders.CompleteAsync(code);
+            if (result.Exception != null) { return BadRequest(); }
             return Ok();
         }
     }

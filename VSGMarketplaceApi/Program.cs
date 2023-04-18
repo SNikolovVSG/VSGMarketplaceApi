@@ -6,6 +6,8 @@ using System.Text;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
 using VSGMarketplaceApi.Profiles;
+using VSGMarketplaceApi.Repositories;
+using VSGMarketplaceApi.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(builder.Configuration["ConnectionString"]));
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 
 //JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
