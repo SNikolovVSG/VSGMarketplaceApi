@@ -10,5 +10,6 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
         Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync();
         Task<IEnumerable<MarketplaceItemViewModel>> GetMarketplaceItemsAsync();
         Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code);
+        Task<int> DeleteAsync(int code);
     }
 }

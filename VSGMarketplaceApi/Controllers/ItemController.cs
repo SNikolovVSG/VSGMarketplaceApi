@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Dapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -17,6 +18,7 @@ namespace VSGMarketplaceApi.Controllers
         private IConfiguration configuration;
         private readonly IMapper mapper;
         private readonly IUnitOfWork unitOfWork;
+        private readonly IValidator validator;
 
         public ItemController(IUnitOfWork unitOfWork, IConfiguration config, IMapper mapper)
         {
@@ -30,9 +32,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromBody] ItemAddModel item)
         {
-            if (item == null || !ModelState.IsValid) { return BadRequest(); }
-
-            var result = await unitOfWork.Items.AddAsync(item);
+            var result = await this.unitOfWork.Items.AddAsync(item);
             if (result > 0) { return Ok(); }
             return BadRequest();
         }
@@ -52,15 +52,16 @@ namespace VSGMarketplaceApi.Controllers
             return BadRequest();
         }
 
+
+        //dexter064 dexter356 
         //works
         [Authorize(Roles = "Administrator")]
         [HttpDelete("~/DeleteItem/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            await connection.ExecuteAsync("delete from items where code = @Code", new { Code = code });
-
-            return Ok();
+            var result = await this.unitOfWork.Items.DeleteAsync(code);
+            if (result > 0) { return Ok(); }
+            return BadRequest();
         }
 
         //works
@@ -68,7 +69,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            var items = await unitOfWork.Items.GetInventoryItemsAsync();
+            var items = await this.unitOfWork.Items.GetInventoryItemsAsync();
             return Ok(items);
         }
 
@@ -77,7 +78,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
-            var items = await unitOfWork.Items.GetMarketplaceItemsAsync();
+            var items = await this.unitOfWork.Items.GetMarketplaceItemsAsync();
             return Ok(items);
         }
 
@@ -86,7 +87,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Marketplace/{code}")]
         public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int code)
         {
-            var item = await unitOfWork.Items.GetMarketplaceItemAsync(code);
+            var item = await this.unitOfWork.Items.GetMarketplaceItemAsync(code);
             return Ok(item);
         }
     }

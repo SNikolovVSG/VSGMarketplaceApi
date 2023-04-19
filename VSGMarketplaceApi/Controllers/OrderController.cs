@@ -26,7 +26,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
-            var result = await unitOfWork.Orders.AddAsync(input);
+            var result = await this.unitOfWork.Orders.AddAsync(input);
 
             if (result > 0) { return Ok(); }
             return BadRequest();
@@ -37,7 +37,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/MyOrders")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromBody] int userId)
         {
-            var result = await unitOfWork.Orders.GetByUserId(userId);
+            var result = await this.unitOfWork.Orders.GetByUserId(userId);
             return Ok(result);
         }
 
@@ -46,7 +46,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/PendingOrder/{code}")]
         public async Task<ActionResult<Order>> ById([FromRoute] int code)
         {
-            var result = await unitOfWork.Orders.GetByCodeAsync(code);
+            var result = await this.unitOfWork.Orders.GetByCodeAsync(code);
             return Ok(result);
         }
 
@@ -55,7 +55,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
         {
-            var result = await unitOfWork.Orders.DeleteAsync(code, userId);
+            var result = await this.unitOfWork.Orders.DeleteAsync(code, userId);
 
             if (result > 0) { return Ok(); }
             return BadRequest();
@@ -66,7 +66,7 @@ namespace VSGMarketplaceApi.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
-            var orders = await unitOfWork.Orders.GetAllPendingOrdersAsync();
+            var orders = await this.unitOfWork.Orders.GetAllPendingOrdersAsync();
             return Ok(orders);
         }
 
@@ -75,7 +75,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)
         {
-            var result = await unitOfWork.Orders.CompleteAsync(code);
+            var result = await this.unitOfWork.Orders.CompleteAsync(code);
             if (result == 0) { return BadRequest(); }
             return Ok();
         }

@@ -1,5 +1,7 @@
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -8,6 +10,7 @@ using VSGMarketplaceApi.Models;
 using VSGMarketplaceApi.Profiles;
 using VSGMarketplaceApi.Repositories;
 using VSGMarketplaceApi.Repositories.Interfaces;
+using VSGMarketplaceApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 builder.Services.AddTransient<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IValidator<Item>, ItemValidator>();
+builder.Services.AddScoped<IValidator<Order>, OrderValidator>();
 
 //JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

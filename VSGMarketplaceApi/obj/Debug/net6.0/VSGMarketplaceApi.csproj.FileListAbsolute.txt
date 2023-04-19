@@ -99,3 +99,6 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Newton
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\AutoMapper.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\FluentValidation.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\FluentValidation.AspNetCore.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\FluentValidation.DependencyInjectionExtensions.dll

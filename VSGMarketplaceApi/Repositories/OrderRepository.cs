@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using FluentValidation;
 using Microsoft.Data.SqlClient;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
@@ -8,10 +9,12 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
     public class OrderRepository : IOrderRepository
     {
         private readonly IConfiguration configuration;
+        private readonly IValidator<Order> validator;
 
-        public OrderRepository(IConfiguration configuration)
+        public OrderRepository(IConfiguration configuration, IValidator<Order> validator)
         {
             this.configuration = configuration;
+            this.validator = validator;
         }
 
         public async Task<int> AddAsync(NewOrderAddModel input)
@@ -60,6 +63,10 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
                 IsDeleted = false,
             };
 
+            var result = validator.Validate(order);
+
+            if (!result.IsValid) { return 0; }
+
             var insertSQL =
                 "insert into Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId, IsDeleted) values (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @UserId, @IsDeleted)";
 
@@ -77,7 +84,10 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
         public async Task<int> CompleteAsync(int code)
         {
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            var changesByCompleting = await connection.ExecuteAsync("update Orders set status = @Status where code = @Code and IsDeleted = 0", new { Status = Constants.Finished, Code = code });
+
+            var completingSQL = "update Orders set status = @Status where code = @Code and IsDeleted = 0";
+
+            var changesByCompleting = await connection.ExecuteAsync(completingSQL, new { Status = Constants.Finished, Code = code });
             return changesByCompleting;
         }
 
@@ -86,9 +96,12 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
             int changesByItemsQuantity = 0;
             using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
             Order order = null;
+
             try
             {
-                order = await connection.QueryFirstAsync<Order>("Select * from orders where code = @Code and IsDeleted = 0", new { Code = code });
+                var selectOrderSQL = "Select * from orders where code = @Code and IsDeleted = 0";
+
+                order = await connection.QueryFirstAsync<Order>(selectOrderSQL, new { Code = code });
             }
             catch (Exception)
             {
@@ -102,16 +115,19 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
             if (order.Status == Constants.Pending)
             {
-                var item = await connection.QueryFirstAsync<Item>("Select * from items where code = @Code", new { Code = order.ItemCode });
+                var selectItemSQL = "Select * from items where code = @Code";
+                var item = await connection.QueryFirstAsync<Item>(selectItemSQL, new { Code = order.ItemCode });
 
                 if (item == null) { return 0; }
 
                 item.QuantityForSale += order.Quantity;
 
-                changesByItemsQuantity = await connection.ExecuteAsync("update items set QuantityForSale = @QuantityForSale where Code = @Code", item);
+                var updateItemQuantitySQL = "update items set QuantityForSale = @QuantityForSale where Code = @Code";
+                changesByItemsQuantity = await connection.ExecuteAsync(updateItemQuantitySQL, item);
             }
 
-            int changesByOrderDelete = await connection.ExecuteAsync("update orders set IsDeleted = 1 where code = @Code", new { Code = code });
+            var deleteOrderSQL = "update orders set IsDeleted = 1 where code = @Code";
+            int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Code = code });
 
             return changesByOrderDelete + changesByItemsQuantity;
         }

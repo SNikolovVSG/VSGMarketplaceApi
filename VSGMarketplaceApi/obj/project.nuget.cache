@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "n813WsLHjDL+IAfFyHNvDX+DHXhwhwshNAAb28K8vLiXk/u/KFqM0+3xhWisBRayJ1JdXfBAtBLfZqkMmShEWA==",
+  "dgSpecHash": "nm6/53EnI6Rk6g32OVfpU2SdXlH1bYV1zzF0IVdMAnS/osMKtwXCakZshYaPfwkSQRMgvn5UioV1B5m00cW7FA==",
   "success": true,
   "projectFilePath": "D:\\Resources\\vsg api\\VSGMarketplaceApi\\VSGMarketplaceApi\\VSGMarketplaceApi.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,9 @@
     "C:\\Users\\SNikolov\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\dapper\\2.0.123\\dapper.2.0.123.nupkg.sha512",
+    "C:\\Users\\SNikolov\\.nuget\\packages\\fluentvalidation\\11.5.2\\fluentvalidation.11.5.2.nupkg.sha512",
+    "C:\\Users\\SNikolov\\.nuget\\packages\\fluentvalidation.aspnetcore\\11.3.0\\fluentvalidation.aspnetcore.11.3.0.nupkg.sha512",
+    "C:\\Users\\SNikolov\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.5.1\\fluentvalidation.dependencyinjectionextensions.11.5.1.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.15\\microsoft.aspnetcore.authentication.jwtbearer.6.0.15.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\6.0.15\\microsoft.aspnetcore.jsonpatch.6.0.15.nupkg.sha512",
