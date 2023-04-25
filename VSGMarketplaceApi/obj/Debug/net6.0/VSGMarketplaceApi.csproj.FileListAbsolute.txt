@@ -102,3 +102,4 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\AutoMa
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\FluentValidation.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\FluentValidation.AspNetCore.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\FluentValidation.DependencyInjectionExtensions.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.MicrosoftAccount.dll

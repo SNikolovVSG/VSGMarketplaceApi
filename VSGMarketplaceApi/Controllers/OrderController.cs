@@ -1,9 +1,5 @@
-﻿using AutoMapper;
-using Dapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
 using VSGMarketplaceApi.Repositories.Interfaces;
@@ -21,18 +17,15 @@ namespace VSGMarketplaceApi.Controllers
             this.unitOfWork = unitOfWork; //ExceptionHandling => if result = 0 => lo6o bace
         }
 
-        //works exceptions ok
         [Authorize]
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
             var result = await this.unitOfWork.Orders.AddAsync(input);
-
             if (result > 0) { return Ok(); }
             return BadRequest();
         }
 
-        //works exceptions ok
         [Authorize]
         [HttpGet("~/MyOrders")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromBody] int userId)
@@ -41,7 +34,6 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(result);
         }
 
-        //works exceptions ok
         [Authorize]
         [HttpGet("~/PendingOrder/{code}")]
         public async Task<ActionResult<Order>> ById([FromRoute] int code)
@@ -50,7 +42,6 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(result);
         }
 
-        //works exception ok
         [Authorize]
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
@@ -61,7 +52,6 @@ namespace VSGMarketplaceApi.Controllers
             return BadRequest();
         }
 
-        //works
         [HttpGet("~/PendingOrders")]
         [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
@@ -70,7 +60,6 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(orders);
         }
 
-        //works
         [Authorize(Roles = "Administrator")]
         [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)

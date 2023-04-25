@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "nm6/53EnI6Rk6g32OVfpU2SdXlH1bYV1zzF0IVdMAnS/osMKtwXCakZshYaPfwkSQRMgvn5UioV1B5m00cW7FA==",
+  "dgSpecHash": "mr51PK+gCJkDAkv0bWRUtBzw4DdBIX3qdnuriEqe8Byv+ogpI365DeYqvv0SwqzOo0ThHm51qW9mc/mTX3um9g==",
   "success": true,
   "projectFilePath": "D:\\Resources\\vsg api\\VSGMarketplaceApi\\VSGMarketplaceApi\\VSGMarketplaceApi.csproj",
   "expectedPackageFiles": [
@@ -14,6 +14,7 @@
     "C:\\Users\\SNikolov\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.5.1\\fluentvalidation.dependencyinjectionextensions.11.5.1.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.15\\microsoft.aspnetcore.authentication.jwtbearer.6.0.15.nupkg.sha512",
+    "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.aspnetcore.authentication.microsoftaccount\\6.0.16\\microsoft.aspnetcore.authentication.microsoftaccount.6.0.16.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\6.0.15\\microsoft.aspnetcore.jsonpatch.6.0.15.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\6.0.15\\microsoft.aspnetcore.mvc.newtonsoftjson.6.0.15.nupkg.sha512",
     "C:\\Users\\SNikolov\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",

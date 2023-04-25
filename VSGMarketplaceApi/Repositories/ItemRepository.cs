@@ -5,8 +5,6 @@ using Microsoft.Data.SqlClient;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
 using VSGMarketplaceApi.Repositories.Interfaces;
-using VSGMarketplaceApi.Validators;
-
 namespace VSGMarketplaceApi.Repositories
 {
     public class ItemRepository : IItemRepository
