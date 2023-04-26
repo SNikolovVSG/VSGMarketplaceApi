@@ -18,11 +18,15 @@ namespace VSGMarketplaceApi.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("~/Inventory/AddItem")]
-        public async Task<IActionResult> AddAsync([FromBody] ItemAddModel item)
+        public async Task<IActionResult> AddAsync([FromForm] ItemAddModel item)
         {
-            var result = await this.unitOfWork.Items.AddAsync(item);
-            if (result > 0) { return Ok(); }
-            return BadRequest();
+            int? result = await this.unitOfWork.Items.AddAsync(item);
+
+
+            if (result == null) { return BadRequest(); }
+
+
+            return Ok();
         }
 
         [Authorize(Roles = "Administrator")]

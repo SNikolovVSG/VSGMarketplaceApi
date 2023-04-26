@@ -16,5 +16,7 @@
 
         public string Description { get; set; }
 
+        public string ImageAssetId { get; set; }
+
     }
 }

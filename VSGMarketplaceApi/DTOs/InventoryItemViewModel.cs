@@ -11,5 +11,7 @@
         public int QuantityForSale { get; set; }
 
         public int Quantity { get; set; }
+
+        public string ImageURL { get; set; }
     }
 }

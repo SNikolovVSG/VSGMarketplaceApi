@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using FluentValidation;
-using Microsoft.Data.SqlClient;
+using System.Data.SqlClient;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
 
@@ -10,16 +10,18 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
     {
         private readonly IConfiguration configuration;
         private readonly IValidator<Order> validator;
+        private readonly string connectionString;
 
         public OrderRepository(IConfiguration configuration, IValidator<Order> validator)
         {
             this.configuration = configuration;
             this.validator = validator;
+            this.connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task<int> AddAsync(NewOrderAddModel input)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(connectionString);
 
             Item item = new Item();
 
@@ -83,7 +85,7 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
         public async Task<int> CompleteAsync(int code)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(connectionString);
 
             var completingSQL = "update Orders set status = @Status where code = @Code and IsDeleted = 0";
 
@@ -94,7 +96,7 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
         public async Task<int> DeleteAsync(int code, int userId)
         {
             int changesByItemsQuantity = 0;
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(connectionString);
             Order order = null;
 
             try
@@ -134,14 +136,14 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
         public async Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync()
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(connectionString);
             var orders = await connection.QueryAsync<PendingOrderViewModel>("select * from orders where status = @Pending and IsDeleted = 0", new { Pending = Constants.Pending });
             return orders;
         }
 
         public async Task<Order> GetByCodeAsync(int code)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(connectionString);
             try
             {
                 var order = await connection.QueryFirstAsync<Order>("select * from orders where code = @Code and IsDeleted = 0", new { Code = code });
@@ -155,7 +157,7 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
         public async Task<IEnumerable<MyOrdersViewModel>> GetByUserId(int userId)
         {
-            using var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(connectionString);
 
             try
             {

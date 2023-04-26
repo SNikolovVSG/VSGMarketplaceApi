@@ -10,7 +10,7 @@ using VSGMarketplaceApi.Repositories.Interfaces;
 using VSGMarketplaceApi.Validators;
 
 
-//Main TODO: Logger, MS Login, Images (cloudinary), IIDentity<T> for T => Primary Key 
+//Main TODO: Logger, Images (cloudinary)
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,9 +21,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //probvai vs scoped
-builder.Services.AddTransient<IUnitOfWork, UnitOfWork>(); 
-builder.Services.AddTransient<IOrderRepository, OrderRepository>();
-builder.Services.AddTransient<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); 
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
+
 builder.Services.AddScoped<IValidator<Item>, ItemValidator>();
 builder.Services.AddScoped<IValidator<Order>, OrderValidator>();
 
