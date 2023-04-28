@@ -1,4 +1,6 @@
-﻿namespace VSGMarketplaceApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VSGMarketplaceApi.Models
 {
     public class Item
     {
@@ -16,7 +18,9 @@
 
         public string Description { get; set; }
 
-        public string ImageAssetId { get; set; }
+        public string ImageURL { get; set; }
+
+        public string ImagePublicId { get; set; }
 
     }
 }

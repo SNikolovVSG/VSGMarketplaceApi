@@ -17,7 +17,6 @@ namespace VSGMarketplaceApi.Controllers
             this.unitOfWork = unitOfWork; //ExceptionHandling => if result = 0 => lo6o bace
         }
 
-        [Authorize]
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
@@ -26,15 +25,15 @@ namespace VSGMarketplaceApi.Controllers
             return BadRequest();
         }
 
-        [Authorize]
-        [HttpGet("~/MyOrders")]
-        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromBody] int userId)
+        //[Authorize]
+        [HttpGet("~/MyOrders/{userId}")]
+        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromRoute] int userId)
         {
             var result = await this.unitOfWork.Orders.GetByUserId(userId);
             return Ok(result);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("~/PendingOrder/{code}")]
         public async Task<ActionResult<Order>> ById([FromRoute] int code)
         {
@@ -42,7 +41,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
         {
@@ -53,14 +52,14 @@ namespace VSGMarketplaceApi.Controllers
         }
 
         [HttpGet("~/PendingOrders")]
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
             var orders = await this.unitOfWork.Orders.GetAllPendingOrdersAsync();
             return Ok(orders);
         }
 
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)
         {

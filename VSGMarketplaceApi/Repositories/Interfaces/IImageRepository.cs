@@ -1,9 +1,11 @@
-﻿namespace VSGMarketplaceApi.Repositories.Interfaces
+﻿using VSGMarketplaceApi.DTOs;
+
+namespace VSGMarketplaceApi.Repositories.Interfaces
 {
     public interface IImageRepository
     {
-        string UploadImage(IFormFile image, string publicId, int itemCode);
+        Task<string[]> UploadImageAsync(IFormFile image);
 
-        string GetImageURL(string itemCode);
+        Task<string[]> UpdateImageAsync(IFormFile image, string imageURL);
     }
 }

@@ -3,6 +3,7 @@ using CloudinaryDotNet;
 
 using System.Data.SqlClient;
 using Dapper;
+using VSGMarketplaceApi.DTOs;
 
 namespace VSGMarketplaceApi.Repositories.Interfaces
 {
@@ -13,7 +14,7 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
         private readonly string apiKey;
         private readonly string apiSecret;
 
-        private readonly string connectionString;
+        private readonly Cloudinary cloudinary;
 
         public ImageRepository(IConfiguration configuration)
         {
@@ -23,33 +24,27 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
             this.apiKey = this.configuration.GetValue<string>("CloudinarySettings:ApiKey");
             this.apiSecret = this.configuration.GetValue<string>("CloudinarySettings:ApiSecret");
 
-            this.connectionString = this.configuration.GetConnectionString("DefaultConnection");
+
+            this.cloudinary = new Cloudinary(new Account(cloudName, apiKey, apiSecret));
         }
 
-
-        public string GetImageURL(string itemCode)
+        public async Task<string[]> UploadImageAsync(IFormFile image)
         {
-            using var connection = new SqlConnection(this.connectionString);
-            var ImageURL = connection.QueryFirst<string>("select imageURL from Images where itemCode = @ItemCode", new { ItemCode = itemCode });
-
-            return ImageURL;
-        }
-
-        public string UploadImage(IFormFile image, string publicId, int itemCode)
-        {
-            var cloudinary = new Cloudinary(new Account(cloudName, apiKey, apiSecret));
-            var result = cloudinary.Upload(new ImageUploadParams
+            var result = await this.cloudinary.UploadAsync(new ImageUploadParams
             {
                 File = new FileDescription(image.FileName,
                       image.OpenReadStream()),
-                PublicId = publicId
+                PublicId = Guid.NewGuid().ToString(),
             });
 
-            using var connection = new SqlConnection(connectionString);
-            var addingImageToDbSQL = "INSERT INTO Images (imageURL, itemCode) VALUES (@ImageURL, @ItemCode)";
-            var addingImageToDb = connection.Execute(addingImageToDbSQL, new { ImageURL = result.SecureUrl.ToString(), ItemCode = itemCode });
+            return new[] { result.SecureUrl.ToString(), result.PublicId.ToString() };
+        }
 
-            return result.SecureUrl.ToString();
+        public async Task<string[]> UpdateImageAsync(IFormFile image, string publicId)
+        {
+            var result = await this.cloudinary.DestroyAsync(new DeletionParams(publicId));
+
+            return await UploadImageAsync(image);
         }
     }
 }

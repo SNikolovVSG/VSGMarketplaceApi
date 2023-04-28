@@ -16,22 +16,20 @@ namespace VSGMarketplaceApi.Controllers
             this.unitOfWork = unitOfWork;
         }
 
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [HttpPost("~/Inventory/AddItem")]
-        public async Task<IActionResult> AddAsync([FromForm] ItemAddModel item)
+        public async Task<IActionResult> AddAsync([FromForm] ItemAddModelString item)
         {
             int? result = await this.unitOfWork.Items.AddAsync(item);
 
-
-            if (result == null) { return BadRequest(); }
-
+            if (result == null || result == 0) { return BadRequest(); }
 
             return Ok();
         }
 
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [HttpPut("~/Inventory/Modify/{code}")]
-        public async Task<IActionResult> Edit([FromRoute] int code, [FromBody] ItemAddModel item)
+        public async Task<IActionResult> Edit([FromRoute] int code, [FromForm] ItemAddModelString item)
         {
             if (!ModelState.IsValid)
             {
@@ -43,7 +41,7 @@ namespace VSGMarketplaceApi.Controllers
             return BadRequest();
         }
 
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [HttpDelete("~/DeleteItem/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
@@ -52,7 +50,7 @@ namespace VSGMarketplaceApi.Controllers
             return BadRequest();
         }
 
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
@@ -60,7 +58,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(items);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
@@ -68,7 +66,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(items);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("~/Marketplace/{code}")]
         public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int code)
         {

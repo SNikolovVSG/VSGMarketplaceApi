@@ -9,6 +9,8 @@ namespace VSGMarketplaceApi.Profiles
         public MappingProfile()
         {
             CreateMap<ItemAddModel, Item>();
+            CreateMap<ItemAddModelString, Item>();
+            CreateMap<ItemAddModelString, ItemAddModel>();
 
             CreateMap<Item, ItemViewModel>();
             CreateMap<Item, InventoryItemViewModel>();

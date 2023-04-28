@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using CloudinaryDotNet.Actions;
-using CloudinaryDotNet;
 using Dapper;
 using FluentValidation;
 using System.Data.SqlClient;
-using VSGMarketplaceApi.Controllers;
 using VSGMarketplaceApi.DTOs;
 using VSGMarketplaceApi.Models;
 using VSGMarketplaceApi.Repositories.Interfaces;
@@ -32,8 +29,10 @@ namespace VSGMarketplaceApi.Repositories
             this.imageRepository = imageRepository;
         }
 
-        public async Task<int> AddAsync(ItemAddModel item)
+        public async Task<int> AddAsync(ItemAddModelString inputItem)
         {
+            var item = mapper.Map<ItemAddModel>(inputItem);
+
             if (item == null) { return 0; };
 
             var result = validator.Validate(mapper.Map<Item>(item));
@@ -41,22 +40,21 @@ namespace VSGMarketplaceApi.Repositories
             if (!result.IsValid) { return 0; }
 
             using var connection = new SqlConnection(connectionString);
-            int changesByAddingItem = await connection.ExecuteAsync("insert into items (name, price, category, quantity, quantityForSale, description) values (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description)", item);
 
-            var itemCode = connection.QueryFirst<int>("select code from items where name = @Name", new { Name = item.Name });
-
-            var imageURL = this.imageRepository.UploadImage(item.Image, item.Name, itemCode);
-
-            if (imageURL.IsNullOrEmpty()) { return 0; }
-
-            int changesByAddingImageToTheItem = await connection.ExecuteAsync("update items set imageURL = @ImageURL where Code = @Code", new { ImageURL = imageURL, Code = itemCode });
-
-            if (changesByAddingImageToTheItem == 0)
+            if (item.Image != null)
             {
-                return 0;
+                var imageData = await this.imageRepository.UploadImageAsync(item.Image);
+
+                if (imageData.IsNullOrEmpty()) { return 0; }
+
+                item.ImageURL = imageData[0];
+                item.ImagePublicId = imageData[1];
             }
 
-            return changesByAddingItem + changesByAddingImageToTheItem;
+            string addItemSQL = "insert into items (name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) values (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId)";
+            int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
+
+            return changesByAddingItem;
         }
 
         public async Task<int> DeleteAsync(int code)
@@ -70,7 +68,9 @@ namespace VSGMarketplaceApi.Repositories
         public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
         {
             using var connection = new SqlConnection(connectionString);
-            var items = await connection.QueryAsync<InventoryItemViewModel>("select * from Items");
+
+            var selectAllItemsSQL = "select * from Items";
+            var items = await connection.QueryAsync<InventoryItemViewModel>(selectAllItemsSQL);
 
             return items;
         }
@@ -78,42 +78,50 @@ namespace VSGMarketplaceApi.Repositories
         public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
-            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>("select * from Items where code = @Code", new { Code = code });
-            if (item == null || item.QuantityForSale <= 0)
-            {
-                return null;
-            }
+
+            var selectItemByCodeSQL = "select * from Items where code = @Code";
+            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>(selectItemByCodeSQL, new { Code = code });
+
+            if (item == null || item.QuantityForSale <= 0) { return null; }
+
             return item;
         }
 
         public async Task<IEnumerable<MarketplaceItemViewModel>> GetMarketplaceItemsAsync()
         {
             using var connection = new SqlConnection(connectionString);
-            var items = await connection.QueryAsync<MarketplaceItemViewModel>("select * from Items where quantityForSale > 0");
+
+            var selectAllMarketplaceItemsSQL = "select * from Items where quantityForSale > 0";
+            var items = await connection.QueryAsync<MarketplaceItemViewModel>(selectAllMarketplaceItemsSQL);
+
             return items;
         }
 
-        public async Task<int> UpdateAsync(ItemAddModel item, int code)
+        public async Task<int> UpdateAsync(ItemAddModelString inputItem, int code)
         {
-            var editItem = mapper.Map<Item>(item);
+            var editItem = mapper.Map<Item>(inputItem);
             editItem.Code = code;
 
             var validationResult = validator.Validate(editItem);
             if (!validationResult.IsValid) { return 0; }
 
             using var connection = new SqlConnection(connectionString);
+            if (inputItem.Image != null)
+            {
+                var imagePublicIdSQL = "select imagePublicId from items where code = @Code";
+                var publicId = await connection.QueryFirstAsync<string>(imagePublicIdSQL, new { Code = code });
+
+                var imageData = await this.imageRepository.UpdateImageAsync(inputItem.Image, publicId);
+
+                editItem.ImageURL = imageData[0];
+                editItem.ImagePublicId = imageData[1];
+            }
+
             int result = 0;
             try
             {
-                result = await connection.ExecuteAsync
-                    ("update items set " +
-                    "name = @Name, " +
-                    "price = @Price, " +
-                    "category = @Category, " +
-                    "quantity = @Quantity, " +
-                    "quantityForSale = @QuantityForSale, " +
-                    "description = @Description " +
-                    "where code = @code", editItem);
+                var updateItemSQL = "update items set name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId where code = @code";
+                result = await connection.ExecuteAsync(updateItemSQL, editItem);
             }
             catch (Exception)
             {

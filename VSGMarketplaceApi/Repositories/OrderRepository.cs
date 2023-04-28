@@ -27,7 +27,8 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
             try
             {
-                item = await connection.QueryFirstAsync<Item>("select * from items where code = @Code", new { Code = input.ItemCode });
+                var selectItemByCode = "select * from items where code = @Code";
+                item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Code = input.ItemCode });
             }
             catch (Exception)
             {
@@ -45,7 +46,8 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
             string userEmail = "";
             try
             {
-                userEmail = await connection.QueryFirstAsync<string>("select email from users where id = @Id", new { Id = input.UserId });
+                var selectUserEmailSQL = "select email from users where id = @Id";
+                userEmail = await connection.QueryFirstAsync<string>(selectUserEmailSQL, new { Id = input.UserId });
             }
             catch (Exception)
             {
@@ -69,16 +71,16 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
             if (!result.IsValid) { return 0; }
 
-            var insertSQL =
+            var addOrderSQL =
                 "insert into Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId, IsDeleted) values (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @UserId, @IsDeleted)";
 
-            var updateSQL = "update items set quantityForSale = @Count where code = @ItemCode";
+            var updateItemQuantitySQL = "update items set quantityForSale = @Count where code = @ItemCode";
 
             var updatedCount = item.QuantityForSale - input.Quantity;
 
-            var changesByAddingOrder = await connection.ExecuteAsync(insertSQL, order);
+            var changesByAddingOrder = await connection.ExecuteAsync(addOrderSQL, order);
 
-            var changesByUpdatingItemQuantity = await connection.ExecuteAsync(updateSQL, new { Count = updatedCount, ItemCode = input.ItemCode });
+            var changesByUpdatingItemQuantity = await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemCode = input.ItemCode });
 
             return changesByAddingOrder + changesByUpdatingItemQuantity;
         }
@@ -87,9 +89,8 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
         {
             using var connection = new SqlConnection(connectionString);
 
-            var completingSQL = "update Orders set status = @Status where code = @Code and IsDeleted = 0";
-
-            var changesByCompleting = await connection.ExecuteAsync(completingSQL, new { Status = Constants.Finished, Code = code });
+            var completeOrderSQL = "update Orders set status = @Status where code = @Code and IsDeleted = 0";
+            var changesByCompleting = await connection.ExecuteAsync(completeOrderSQL, new { Status = Constants.Finished, Code = code });
             return changesByCompleting;
         }
 
@@ -102,7 +103,6 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
             try
             {
                 var selectOrderSQL = "Select * from orders where code = @Code and IsDeleted = 0";
-
                 order = await connection.QueryFirstAsync<Order>(selectOrderSQL, new { Code = code });
             }
             catch (Exception)
@@ -117,8 +117,8 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
 
             if (order.Status == Constants.Pending)
             {
-                var selectItemSQL = "Select * from items where code = @Code";
-                var item = await connection.QueryFirstAsync<Item>(selectItemSQL, new { Code = order.ItemCode });
+                var selectItemByCode = "Select * from items where code = @Code";
+                var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Code = order.ItemCode });
 
                 if (item == null) { return 0; }
 
@@ -129,6 +129,9 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
             }
 
             var deleteOrderSQL = "update orders set IsDeleted = 1 where code = @Code";
+
+            //var HARDdeleteOrderSQL = "delete from orders where code = @Code";
+
             int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Code = code });
 
             return changesByOrderDelete + changesByItemsQuantity;
@@ -137,7 +140,9 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
         public async Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync()
         {
             using var connection = new SqlConnection(connectionString);
-            var orders = await connection.QueryAsync<PendingOrderViewModel>("select * from orders where status = @Pending and IsDeleted = 0", new { Pending = Constants.Pending });
+
+            var allPendingOrdersSQL = "select * from orders where status = @Pending and IsDeleted = 0";
+            var orders = await connection.QueryAsync<PendingOrderViewModel>(allPendingOrdersSQL, new { Pending = Constants.Pending });
             return orders;
         }
 
@@ -146,7 +151,8 @@ namespace VSGMarketplaceApi.Repositories.Interfaces
             using var connection = new SqlConnection(connectionString);
             try
             {
-                var order = await connection.QueryFirstAsync<Order>("select * from orders where code = @Code and IsDeleted = 0", new { Code = code });
+                var getOrderByCode = "select * from orders where code = @Code and IsDeleted = 0";
+                var order = await connection.QueryFirstAsync<Order>(getOrderByCode, new { Code = code });
                 return order;
             }
             catch (Exception)

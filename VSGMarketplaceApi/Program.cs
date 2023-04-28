@@ -10,7 +10,7 @@ using VSGMarketplaceApi.Repositories.Interfaces;
 using VSGMarketplaceApi.Validators;
 
 
-//Main TODO: Logger, Images (cloudinary)
+//Main TODO: Logger, exception Handling, Migration, modify item, code manual set
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,7 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //probvai vs scoped
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IImageRepository, ImageRepository>();
@@ -47,6 +47,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MyCorsPolicy", builder => builder
+   //.WithOrigins("http://localhost:5500/")
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header"));
+});
+
 builder.Services.AddAuthorization();
 
 //JSON add
@@ -54,6 +65,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 //auto mapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 
 var config = new MapperConfiguration(cfg =>
 {
@@ -71,6 +83,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("MyCorsPolicy");
 
 app.UseHttpsRedirection();
 

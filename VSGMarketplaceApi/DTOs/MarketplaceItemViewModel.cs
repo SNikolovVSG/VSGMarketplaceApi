@@ -10,5 +10,6 @@
 
         public int QuantityForSale { get; set; }
 
+        public string ImageURL { get; set; }
     }
 }
