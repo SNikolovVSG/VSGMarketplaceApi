@@ -7,8 +7,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using VSGMarketplaceApi.Data.Models;
 using VSGMarketplaceApi.DTOs;
-using VSGMarketplaceApi.Models;
 
 namespace VSGMarketplaceApi.Controllers
 {
@@ -35,7 +35,7 @@ namespace VSGMarketplaceApi.Controllers
             {
                 var token = Generate(user);
 
-                string[] args = { token, user.FirstName};
+                string[] args = { token, user.Email };
 
                 RedirectToAction("~/Marketplace");
 
@@ -61,7 +61,7 @@ namespace VSGMarketplaceApi.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.FirstName),
+                new Claim(ClaimTypes.NameIdentifier, user.Email),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
             };

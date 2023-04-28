@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
+using FluentMigrator.Runner;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
-using VSGMarketplaceApi.Models;
+using VSGMarketplaceApi.Data;
+using VSGMarketplaceApi.Data.Extensions;
+using VSGMarketplaceApi.Data.Models;
+using VSGMarketplaceApi.Data.Repositories;
+using VSGMarketplaceApi.Data.Repositories.Interfaces;
 using VSGMarketplaceApi.Profiles;
-using VSGMarketplaceApi.Repositories;
-using VSGMarketplaceApi.Repositories.Interfaces;
 using VSGMarketplaceApi.Validators;
 
 
@@ -14,6 +18,14 @@ using VSGMarketplaceApi.Validators;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddSingleton<Database>();
+
+builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
+.AddFluentMigratorCore()
+        .ConfigureRunner(c => c.AddSqlServer2012()
+            .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -95,5 +107,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MigrateDatabase();
 
 app.Run();

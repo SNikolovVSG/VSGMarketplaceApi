@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VSGMarketplaceApi.Data.Repositories.Interfaces;
 using VSGMarketplaceApi.DTOs;
-using VSGMarketplaceApi.Repositories.Interfaces;
 
 namespace VSGMarketplaceApi.Controllers
 {

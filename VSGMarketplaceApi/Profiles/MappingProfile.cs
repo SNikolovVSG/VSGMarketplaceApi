@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using VSGMarketplaceApi.Data.Models;
 using VSGMarketplaceApi.DTOs;
-using VSGMarketplaceApi.Models;
 
 namespace VSGMarketplaceApi.Profiles
 {

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using VSGMarketplaceApi.Models;
+using VSGMarketplaceApi.Data.Models;
 
 namespace VSGMarketplaceApi.Validators
 {
