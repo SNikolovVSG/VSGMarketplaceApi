@@ -21,9 +21,9 @@ namespace VSGMarketplaceApi.Data.Migrations
                 .WithColumn("Category").AsString(150).NotNullable()
                 .WithColumn("Quantity").AsInt16().NotNullable()
                 .WithColumn("QuantityForSale").AsInt16().WithDefaultValue(0)
-                .WithColumn("Description").AsString()
-                .WithColumn("ImageURL").AsString()
-                .WithColumn("ImagePublicId").AsString().Unique();
+                .WithColumn("Description").AsString().Nullable()
+                .WithColumn("ImageURL").AsString().Nullable()
+                .WithColumn("ImagePublicId").AsString().Unique().Nullable();
 
             Create.Table("Orders")
                 .WithColumn("Code").AsInt32().NotNullable().PrimaryKey()

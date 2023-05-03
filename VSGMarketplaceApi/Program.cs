@@ -3,6 +3,8 @@ using FluentMigrator.Runner;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NLog;
+using NLog.Web;
 using System.Reflection;
 using System.Text;
 using VSGMarketplaceApi.Data;
@@ -14,100 +16,118 @@ using VSGMarketplaceApi.Profiles;
 using VSGMarketplaceApi.Validators;
 
 
-//Main TODO: Logger, exception Handling, Migration, modify item, code manual set
-var builder = WebApplication.CreateBuilder(args);
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
-// Add services to the container.
-builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddSingleton<Database>();
+try
+{
+    //Main TODO: Logger, exception Handling, Login
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
-.AddFluentMigratorCore()
-        .ConfigureRunner(c => c.AddSqlServer2012()
-            .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
-            .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
+    // Add services to the container.
+    builder.Services.AddSingleton<DapperContext>();
+    builder.Services.AddSingleton<Database>();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
+    .AddFluentMigratorCore()
+            .ConfigureRunner(c => c.AddSqlServer2012()
+                .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
 
-//probvai vs scoped
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IItemRepository, ItemRepository>();
-builder.Services.AddScoped<IImageRepository, ImageRepository>();
+    builder.Services.AddControllers();
 
-builder.Services.AddScoped<IValidator<Item>, ItemValidator>();
-builder.Services.AddScoped<IValidator<Order>, OrderValidator>();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-//JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = true;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters()
+    builder.Logging.ClearProviders();
+    builder.Host.UseNLog();
+
+    //probvai vs scoped
+    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+    builder.Services.AddScoped<IItemRepository, ItemRepository>();
+    builder.Services.AddScoped<IImageRepository, ImageRepository>();
+
+    builder.Services.AddScoped<IValidator<Item>, ItemValidator>();
+    builder.Services.AddScoped<IValidator<Order>, OrderValidator>();
+
+    //JWT
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
+            options.RequireHttpsMetadata = true;
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                ValidAudience = builder.Configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            };
+        });
+
+    //CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("MyCorsPolicy", builder => builder
+        //.WithOrigins("http://localhost:5500/")
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header"));
     });
 
-//CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("MyCorsPolicy", builder => builder
-   //.WithOrigins("http://localhost:5500/")
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header"));
-});
+    builder.Services.AddAuthorization();
 
-builder.Services.AddAuthorization();
+    //JSON add
+    builder.Services.AddControllers().AddNewtonsoftJson();
 
-//JSON add
-builder.Services.AddControllers().AddNewtonsoftJson();
-
-//auto mapper
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    //auto mapper
+    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 
-var config = new MapperConfiguration(cfg =>
-{
-    cfg.AddProfile<MappingProfile>();
-});
+    var config = new MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile<MappingProfile>();
+    });
 
-IMapper mapper = config.CreateMapper();
-builder.Services.AddSingleton(mapper);
+    IMapper mapper = config.CreateMapper();
+    builder.Services.AddSingleton(mapper);
 
-var app = builder.Build();
+    var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseCors("MyCorsPolicy");
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+
+    //app.UseRouting();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.MigrateDatabase();
+
+    app.Run();
 }
-
-app.UseCors("MyCorsPolicy");
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-
-//app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.MigrateDatabase();
-
-app.Run();
+catch (Exception ex)
+{
+    logger.Error(ex);
+    throw (ex);
+}
+finally
+{
+    LogManager.Shutdown();
+}

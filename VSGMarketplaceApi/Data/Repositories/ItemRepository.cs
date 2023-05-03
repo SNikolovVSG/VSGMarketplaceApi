@@ -51,16 +51,53 @@ namespace VSGMarketplaceApi.Data.Repositories
                 item.ImagePublicId = imageData[1];
             }
 
-            string addItemSQL = "insert into items (name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) values (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId)";
+            string addItemSQL = "INSERT INTO dbo.Items (name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId)";
             int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
 
             return changesByAddingItem;
         }
 
+        public async Task<string> AddAsyncTest(ItemAddModelString inputItem)
+        {
+            var item = mapper.Map<ItemAddModel>(inputItem);
+
+            if (item == null) { return "Invalid item"; };
+
+            var result = validator.Validate(mapper.Map<Item>(item));
+
+            if (!result.IsValid) { return "Validation error"; }
+
+            using var connection = new SqlConnection(connectionString);
+
+            if (item.Image != null)
+            {
+                var imageData = await imageRepository.UploadImageAsync(item.Image);
+
+                if (imageData.IsNullOrEmpty()) { return "Image error"; }
+
+                item.ImageURL = imageData[0];
+                item.ImagePublicId = imageData[1];
+            }
+
+            bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
+            if (!categoryExist) { return "Category error"; }
+
+            //string addItemSQL = "SET IDENTITY_INSERT dbo.Items ON;" + Environment.NewLine + 
+            //    "INSERT INTO dbo.Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);" + 
+            //    Environment.NewLine + 
+            //    "SET IDENTITY_INSERT dbo.Items OFF;";
+
+            string addItemSQL = "INSERT INTO dbo.Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);";
+
+            int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
+
+            return changesByAddingItem > 0 ? Constants.Ok : Constants.DatabaseError;
+        }
+
         public async Task<int> DeleteAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
-            var result = await connection.ExecuteAsync("delete from items where code = @Code", new { Code = code });
+            var result = await connection.ExecuteAsync("DELETE FROM dbo.Items WHERE code = @Code", new { Code = code });
 
             return result;
         }
@@ -69,7 +106,7 @@ namespace VSGMarketplaceApi.Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectAllItemsSQL = "select * from Items";
+            var selectAllItemsSQL = "SELECT * FROM dbo.Items";
             var items = await connection.QueryAsync<InventoryItemViewModel>(selectAllItemsSQL);
 
             return items;
@@ -79,7 +116,7 @@ namespace VSGMarketplaceApi.Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectItemByCodeSQL = "select * from Items where code = @Code";
+            var selectItemByCodeSQL = "SELECT * FROM dbo.Items WHERE code = @Code";
             var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>(selectItemByCodeSQL, new { Code = code });
 
             if (item == null || item.QuantityForSale <= 0) { return null; }
@@ -91,7 +128,7 @@ namespace VSGMarketplaceApi.Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectAllMarketplaceItemsSQL = "select * from Items where quantityForSale > 0";
+            var selectAllMarketplaceItemsSQL = "SELECT * FROM dbo.Items WHERE quantityForSale > 0";
             var items = await connection.QueryAsync<MarketplaceItemViewModel>(selectAllMarketplaceItemsSQL);
 
             return items;
@@ -105,11 +142,11 @@ namespace VSGMarketplaceApi.Data.Repositories
             var validationResult = validator.Validate(editItem);
             if (!validationResult.IsValid) { return 0; }
 
-            int result = 0;
+            int result;
             using var connection = new SqlConnection(connectionString);
             if (inputItem.Image != null)
             {
-                var imagePublicIdSQL = "select imagePublicId from items where code = @Code";
+                var imagePublicIdSQL = "SELECT imagePublicId FROM dbo.Items WHERE code = @Code";
                 var publicId = await connection.QueryFirstAsync<string>(imagePublicIdSQL, new { Code = code });
 
                 var imageData = await imageRepository.UpdateImageAsync(inputItem.Image, publicId);
@@ -117,14 +154,14 @@ namespace VSGMarketplaceApi.Data.Repositories
                 editItem.ImageURL = imageData[0];
                 editItem.ImagePublicId = imageData[1];
 
-                var updateItemSQL = "update items set name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId where code = @code";
+                var updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId WHERE code = @code";
                 result = await connection.ExecuteAsync(updateItemSQL, editItem);
                 return result;
             }
 
             try
             {
-                var updateItemSQL = "update items set name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description where code = @code";
+                var updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description WHERE code = @code";
                 result = await connection.ExecuteAsync(updateItemSQL, editItem);
             }
             catch (Exception)

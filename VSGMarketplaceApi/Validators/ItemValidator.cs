@@ -7,6 +7,7 @@ namespace VSGMarketplaceApi.Validators
     {
         public ItemValidator()
         {
+            RuleFor(item => item.Code).NotEmpty().GreaterThanOrEqualTo(0);
             RuleFor(item => item.Price).GreaterThanOrEqualTo(0);
             RuleFor(item => item.Name).NotEmpty();
             RuleFor(item => item.Quantity).GreaterThanOrEqualTo(0);
