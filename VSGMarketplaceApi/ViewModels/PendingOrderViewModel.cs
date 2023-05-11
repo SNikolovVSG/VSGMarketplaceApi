@@ -1,12 +1,14 @@
-﻿namespace VSGMarketplaceApi.DTOs
+﻿namespace VSGMarketplaceApi.ViewModels
 {
-    public class MyOrdersViewModel
+    public class PendingOrderViewModel
     {
-        public string Name { get; set; }
+        public int Code { get; set; }
 
         public int Quantity { get; set; }
 
         public double OrderPrice { get; set; }
+
+        public string OrderedBy { get; set; }
 
         public DateTime OrderDate { get; set; }
 

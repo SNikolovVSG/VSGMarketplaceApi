@@ -4,7 +4,7 @@ using NLog;
 using NLog.Web;
 using VSGMarketplaceApi.Data.Models;
 using VSGMarketplaceApi.Data.Repositories.Interfaces;
-using VSGMarketplaceApi.DTOs;
+using VSGMarketplaceApi.ViewModels;
 
 namespace VSGMarketplaceApi.Controllers
 {
@@ -66,7 +66,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            throw new Exception("ISUS");
+            throw new ArgumentNullException("ISUS");
 
             var items = await this.unitOfWork.Items.GetInventoryItemsAsync();
             return Ok(items);

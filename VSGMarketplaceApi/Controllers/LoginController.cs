@@ -8,7 +8,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.DTOs;
+using VSGMarketplaceApi.ViewModels;
 
 namespace VSGMarketplaceApi.Controllers
 {

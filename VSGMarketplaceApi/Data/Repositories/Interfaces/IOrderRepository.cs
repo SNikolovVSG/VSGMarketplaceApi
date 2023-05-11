@@ -1,5 +1,5 @@
 ﻿using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.DTOs;
+using VSGMarketplaceApi.ViewModels;
 
 namespace VSGMarketplaceApi.Data.Repositories.Interfaces
 {

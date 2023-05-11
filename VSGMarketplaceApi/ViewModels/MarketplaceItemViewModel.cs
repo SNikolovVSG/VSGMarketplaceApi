@@ -1,4 +1,4 @@
-﻿namespace VSGMarketplaceApi.DTOs
+﻿namespace VSGMarketplaceApi.ViewModels
 {
     public class MarketplaceItemViewModel
     {

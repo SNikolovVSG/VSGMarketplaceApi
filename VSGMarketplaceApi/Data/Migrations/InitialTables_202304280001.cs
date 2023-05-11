@@ -1,4 +1,5 @@
 ﻿using FluentMigrator;
+using FluentMigrator.SqlServer;
 using VSGMarketplaceApi.Data.Models;
 
 namespace VSGMarketplaceApi.Data.Migrations
@@ -8,6 +9,8 @@ namespace VSGMarketplaceApi.Data.Migrations
     {
         public override void Down()
         {
+            Delete.Table("Logs");
+            Delete.Table("Users");
             Delete.Table("Orders");
             Delete.Table("Items");
         }
@@ -35,7 +38,38 @@ namespace VSGMarketplaceApi.Data.Migrations
                 .WithColumn("Status").AsString().WithDefaultValue(Constants.Pending)
                 .WithColumn("IsDeleted").AsBoolean().WithDefaultValue(false);
 
+            Create.Table("Users")
+                .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
+                .WithColumn("Email").AsString().NotNullable()
+                .WithColumn("Role").AsString()
+                .WithColumn("Password").AsString().NotNullable();
 
+            Insert.IntoTable("Users")
+                .WithIdentityInsert()
+                .Row(new User
+                {
+                    Id = 1,
+                    Email = "SNikolov@vsgbg.com",
+                    Password = "123456",
+                    Role = "User"
+                });
+            Insert.IntoTable("Users")
+                .WithIdentityInsert()
+                .Row(new User
+                {
+                    Id = 2,
+                    Email = "SVanev@vsgbg.com",
+                    Password = "123456",
+                    Role = "Admin"
+                });
+
+            Create.Table("Logs")
+                .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
+                .WithColumn("Date").AsDate()
+                .WithColumn("Level").AsString()
+                .WithColumn("Message").AsString()
+                .WithColumn("MachineName").AsString()
+                .WithColumn("Logger").AsString();
         }
     }
 }

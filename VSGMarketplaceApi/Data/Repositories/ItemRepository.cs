@@ -2,7 +2,7 @@
 using Dapper;
 using FluentValidation;
 using System.Data.SqlClient;
-using VSGMarketplaceApi.DTOs;
+using VSGMarketplaceApi.ViewModels;
 using Microsoft.IdentityModel.Tokens;
 using VSGMarketplaceApi.Data.Repositories.Interfaces;
 using VSGMarketplaceApi.Data.Models;
