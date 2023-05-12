@@ -1,9 +1,6 @@
 ﻿using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
 
-using System.Data.SqlClient;
-using Dapper;
-using VSGMarketplaceApi.ViewModels;
 using VSGMarketplaceApi.Data.Repositories.Interfaces;
 
 namespace VSGMarketplaceApi.Data.Repositories

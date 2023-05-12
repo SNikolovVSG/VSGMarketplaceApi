@@ -70,6 +70,8 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
+            throw new Exception(" ebago");
+
             var items = await this.unitOfWork.Items.GetInventoryItemsAsync();
             return Ok(items);
         }

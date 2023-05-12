@@ -12,6 +12,7 @@ using VSGMarketplaceApi.Data.Extensions;
 using VSGMarketplaceApi.Data.Models;
 using VSGMarketplaceApi.Data.Repositories;
 using VSGMarketplaceApi.Data.Repositories.Interfaces;
+using VSGMarketplaceApi.Middleware;
 using VSGMarketplaceApi.Profiles;
 using VSGMarketplaceApi.Validators;
 
@@ -28,7 +29,11 @@ builder.Services.AddFluentMigratorCore()
             .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
             .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
 
-builder.Services.AddLogging(c => c.AddFluentMigratorConsole());
+//builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
+//    .AddFluentMigratorCore()
+//        .ConfigureRunner(c => c.AddSqlServer2012()
+//            .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
+//            .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
 
 builder.Services.AddControllers();
 
@@ -101,6 +106,8 @@ var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentCla
 
 try
 {
+    app.UseMiddleware<ErrorHandlingMiddleware>();
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -120,12 +127,12 @@ try
 
     app.MapControllers();
 
-
     app.Run();
 }
 catch (Exception ex)
 {
-    logger.Error(ex);
+    logger.Error(ex, ex.Message);
+    //throw ex;
 }
 finally
 {

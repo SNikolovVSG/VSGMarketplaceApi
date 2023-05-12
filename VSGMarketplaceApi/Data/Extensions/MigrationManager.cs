@@ -13,7 +13,7 @@ namespace VSGMarketplaceApi.Data.Extensions
 
                 try
                 {
-                    databaseService.CreateDatabase("VSGMarketplaceMigrationTEST");
+                    databaseService.CreateDatabase("VSGMarketplace");
 
                     migrationService.ListMigrations();
                     migrationService.MigrateUp();
