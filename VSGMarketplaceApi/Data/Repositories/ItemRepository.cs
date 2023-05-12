@@ -29,35 +29,7 @@ namespace VSGMarketplaceApi.Data.Repositories
             this.imageRepository = imageRepository;
         }
 
-        public async Task<int> AddAsync(ItemAddModelString inputItem)
-        {
-            var item = mapper.Map<ItemAddModel>(inputItem);
-
-            if (item == null) { return 0; };
-
-            var result = validator.Validate(mapper.Map<Item>(item));
-
-            if (!result.IsValid) { return 0; }
-
-            using var connection = new SqlConnection(connectionString);
-
-            if (item.Image != null)
-            {
-                var imageData = await imageRepository.UploadImageAsync(item.Image);
-
-                if (imageData.IsNullOrEmpty()) { return 0; }
-
-                item.ImageURL = imageData[0];
-                item.ImagePublicId = imageData[1];
-            }
-
-            string addItemSQL = "INSERT INTO dbo.Items (name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId)";
-            int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
-
-            return changesByAddingItem;
-        }
-
-        public async Task<string> AddAsyncTest(ItemAddModelString inputItem)
+        public async Task<string> AddAsync(ItemAddModelString inputItem)
         {
             var item = mapper.Map<ItemAddModel>(inputItem);
 
@@ -94,12 +66,12 @@ namespace VSGMarketplaceApi.Data.Repositories
             return changesByAddingItem > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<int> DeleteAsync(int code)
+        public async Task<string> DeleteAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
             var result = await connection.ExecuteAsync("DELETE FROM dbo.Items WHERE code = @Code", new { Code = code });
 
-            return result;
+            return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
         public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
@@ -134,16 +106,17 @@ namespace VSGMarketplaceApi.Data.Repositories
             return items;
         }
 
-        public async Task<int> UpdateAsync(ItemAddModelString inputItem, int code)
+        public async Task<string> UpdateAsync(ItemAddModelString inputItem, int code)
         {
             var editItem = mapper.Map<Item>(inputItem);
             editItem.Code = code;
 
             var validationResult = validator.Validate(editItem);
-            if (!validationResult.IsValid) { return 0; }
+            if (!validationResult.IsValid) { return Constants.ValidationError; }
 
             int result;
             using var connection = new SqlConnection(connectionString);
+            string updateItemSQL;
             if (inputItem.Image != null)
             {
                 var imagePublicIdSQL = "SELECT imagePublicId FROM dbo.Items WHERE code = @Code";
@@ -154,22 +127,15 @@ namespace VSGMarketplaceApi.Data.Repositories
                 editItem.ImageURL = imageData[0];
                 editItem.ImagePublicId = imageData[1];
 
-                var updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId WHERE code = @code";
+                updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId WHERE code = @code";
                 result = await connection.ExecuteAsync(updateItemSQL, editItem);
-                return result;
+                return result > 0 ? Constants.Ok : Constants.DatabaseError;
             }
 
-            try
-            {
-                var updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description WHERE code = @code";
-                result = await connection.ExecuteAsync(updateItemSQL, editItem);
-            }
-            catch (Exception)
-            {
-                return 0;
-            }
+            updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description WHERE code = @code";
+            result = await connection.ExecuteAsync(updateItemSQL, editItem);
 
-            return result;
+            return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
     }
 }

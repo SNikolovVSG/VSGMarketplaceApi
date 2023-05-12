@@ -20,7 +20,7 @@ namespace VSGMarketplaceApi.Data.Repositories
             connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<int> AddAsync(NewOrderAddModel input)
+        public async Task<string> AddAsync(NewOrderAddModel input)
         {
             using var connection = new SqlConnection(connectionString);
 
@@ -33,13 +33,13 @@ namespace VSGMarketplaceApi.Data.Repositories
             }
             catch (Exception)
             {
-                return 0;
+                return "Wrong item Code";
             }
 
             bool checkForQuantity = item.QuantityForSale < input.Quantity;
             if (checkForQuantity)
             {
-                return 0;
+                return "Not enough quantity";
             }
 
             var orderPrice = item.Price * input.Quantity;
@@ -52,7 +52,7 @@ namespace VSGMarketplaceApi.Data.Repositories
             }
             catch (Exception)
             {
-                return 0;
+                return "User error";
             }
 
             var order = new Order
@@ -70,7 +70,7 @@ namespace VSGMarketplaceApi.Data.Repositories
 
             var result = validator.Validate(order);
 
-            if (!result.IsValid) { return 0; }
+            if (!result.IsValid) { return Constants.ValidationError; }
 
             var addOrderSQL =
                 "INSERT INTO dbo.Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @UserId, @IsDeleted)";
@@ -83,19 +83,23 @@ namespace VSGMarketplaceApi.Data.Repositories
 
             var changesByUpdatingItemQuantity = await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, input.ItemCode });
 
-            return changesByAddingOrder + changesByUpdatingItemQuantity;
+            if (changesByAddingOrder + changesByUpdatingItemQuantity > 0)
+            {
+                return Constants.Ok;
+            }
+            return Constants.DatabaseError;
         }
 
-        public async Task<int> CompleteAsync(int code)
+        public async Task<string> CompleteAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
 
             var completeOrderSQL = "UPDATE dbo.Orders SET status = @Status where code = @Code and IsDeleted = 0";
             var changesByCompleting = await connection.ExecuteAsync(completeOrderSQL, new { Status = Constants.Finished, Code = code });
-            return changesByCompleting;
+            return changesByCompleting > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<int> DeleteAsync(int code, int userId)
+        public async Task<string> DeleteAsync(int code, int userId)
         {
             int changesByItemsQuantity = 0;
             using var connection = new SqlConnection(connectionString);
@@ -108,12 +112,12 @@ namespace VSGMarketplaceApi.Data.Repositories
             }
             catch (Exception)
             {
-                return 0;
+                return "Wrong order";
             }
 
             if (order == null || order.UserId != userId)
             {
-                return 0;
+                return "Not your order!";
             }
 
             if (order.Status == Constants.Pending)
@@ -121,7 +125,7 @@ namespace VSGMarketplaceApi.Data.Repositories
                 var selectItemByCode = "SELECT * FROM dbo.Items WHERE code = @Code";
                 var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Code = order.ItemCode });
 
-                if (item == null) { return 0; }
+                if (item == null) { return "Invalid item Code"; }
 
                 item.QuantityForSale += order.Quantity;
 
@@ -135,7 +139,7 @@ namespace VSGMarketplaceApi.Data.Repositories
 
             int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Code = code });
 
-            return changesByOrderDelete + changesByItemsQuantity;
+            return changesByOrderDelete + changesByItemsQuantity > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
         public async Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync()

@@ -25,15 +25,11 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromForm] ItemAddModelString item)
         {
-            //int? result = await this.unitOfWork.Items.AddAsync(item);
+            string result = await this.unitOfWork.Items.AddAsync(item);
 
-            //if (result == null || result == 0) { return BadRequest(); }
-
-            string res = await this.unitOfWork.Items.AddAsyncTest(item);
-
-            if (res != Constants.Ok)
+            if (result != Constants.Ok)
             {
-                return BadRequest(res);
+                return BadRequest(result);
             }
 
             return Ok();
@@ -49,8 +45,12 @@ namespace VSGMarketplaceApi.Controllers
             }
 
             var result = await unitOfWork.Items.UpdateAsync(item, code);
-            if (result > 0) { return Ok(); };
-            return BadRequest();
+            if (result != Constants.Ok)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok();
         }
 
         //[Authorize(Roles = "Administrator")]
@@ -58,16 +58,18 @@ namespace VSGMarketplaceApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
             var result = await this.unitOfWork.Items.DeleteAsync(code);
-            if (result > 0) { return Ok(); }
-            return BadRequest();
+            if (result != Constants.Ok)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok();
         }
 
         //[Authorize(Roles = "Administrator")]
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            throw new ArgumentNullException("ISUS");
-
             var items = await this.unitOfWork.Items.GetInventoryItemsAsync();
             return Ok(items);
         }

@@ -21,8 +21,12 @@ namespace VSGMarketplaceApi.Controllers
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
             var result = await this.unitOfWork.Orders.AddAsync(input);
-            if (result > 0) { return Ok(); }
-            return BadRequest();
+            if (result != Constants.Ok)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok();
         }
 
         //[Authorize]
@@ -47,8 +51,11 @@ namespace VSGMarketplaceApi.Controllers
         {
             var result = await this.unitOfWork.Orders.DeleteAsync(code, userId);
 
-            if (result > 0) { return Ok(); }
-            return BadRequest();
+            if (result != Constants.Ok)
+            {
+                return BadRequest(result);
+            }
+            return Ok();
         }
 
         [HttpGet("~/PendingOrders")]
@@ -64,7 +71,12 @@ namespace VSGMarketplaceApi.Controllers
         public async Task<IActionResult> Complete([FromRoute] int code)
         {
             var result = await this.unitOfWork.Orders.CompleteAsync(code);
-            if (result == 0) { return BadRequest(); }
+
+            if (result != Constants.Ok)
+            {
+                return BadRequest(result);
+            }
+
             return Ok();
         }
     }

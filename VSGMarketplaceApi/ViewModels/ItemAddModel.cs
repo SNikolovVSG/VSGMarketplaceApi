@@ -41,6 +41,6 @@
 
         public IFormFile? Image { get; set; }
 
-        public string? ImageURL { get; set; }
+        //public string? ImageURL { get; set; }
     }
 }
