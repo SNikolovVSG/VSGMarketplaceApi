@@ -6,6 +6,7 @@ using VSGMarketplaceApi.ViewModels;
 using Microsoft.IdentityModel.Tokens;
 using VSGMarketplaceApi.Data.Repositories.Interfaces;
 using VSGMarketplaceApi.Data.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace VSGMarketplaceApi.Data.Repositories
 {
@@ -15,10 +16,11 @@ namespace VSGMarketplaceApi.Data.Repositories
         private readonly IMapper mapper;
         private readonly IValidator<Item> validator;
         private readonly string connectionString;
+        private IMemoryCache memoryCache;
 
         private readonly IImageRepository imageRepository;
 
-        public ItemRepository(IConfiguration configuration, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository)
+        public ItemRepository(IConfiguration configuration, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IMemoryCache memoryCache)
         {
             this.configuration = configuration;
             this.mapper = mapper;
@@ -27,6 +29,7 @@ namespace VSGMarketplaceApi.Data.Repositories
             connectionString = this.configuration.GetConnectionString("DefaultConnection");
 
             this.imageRepository = imageRepository;
+            this.memoryCache = memoryCache;
         }
 
         public async Task<string> AddAsync(ItemAddModelString inputItem)
@@ -53,11 +56,6 @@ namespace VSGMarketplaceApi.Data.Repositories
 
             bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
             if (!categoryExist) { return "Category error"; }
-
-            //string addItemSQL = "SET IDENTITY_INSERT dbo.Items ON;" + Environment.NewLine + 
-            //    "INSERT INTO dbo.Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);" + 
-            //    Environment.NewLine + 
-            //    "SET IDENTITY_INSERT dbo.Items OFF;";
 
             string addItemSQL = "INSERT INTO dbo.Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);";
 

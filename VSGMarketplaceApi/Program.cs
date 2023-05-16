@@ -2,6 +2,7 @@
 using FluentMigrator.Runner;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
@@ -14,10 +15,12 @@ using VSGMarketplaceApi.Data.Repositories;
 using VSGMarketplaceApi.Data.Repositories.Interfaces;
 using VSGMarketplaceApi.Middleware;
 using VSGMarketplaceApi.Profiles;
+using VSGMarketplaceApi.Services;
+using VSGMarketplaceApi.Services.Interfaces;
 using VSGMarketplaceApi.Validators;
 
 
-//Main TODO: exception Handling, Login
+//Main TODO: Login
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -52,6 +55,9 @@ builder.Services.AddScoped<IImageRepository, ImageRepository>();
 
 builder.Services.AddScoped<IValidator<Item>, ItemValidator>();
 builder.Services.AddScoped<IValidator<Order>, OrderValidator>();
+
+builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IItemsService, ItemsService>();
 
 //JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -90,6 +96,8 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 //auto mapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+//Caching
+builder.Services.AddMemoryCache();
 
 var config = new MapperConfiguration(cfg =>
 {

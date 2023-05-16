@@ -12,10 +12,10 @@ namespace VSGMarketplaceApi.Data.Migrations
             Create.Table("Items")
                 .WithColumn("Code").AsInt32().NotNullable().PrimaryKey()
                 .WithColumn("Name").AsString(150).NotNullable()
-                .WithColumn("Price").AsInt16().WithDefaultValue(0)
+                .WithColumn("Price").AsInt32().WithDefaultValue(0)
                 .WithColumn("Category").AsString(150).NotNullable()
-                .WithColumn("Quantity").AsInt16().NotNullable()
-                .WithColumn("QuantityForSale").AsInt16().WithDefaultValue(0)
+                .WithColumn("Quantity").AsInt32().NotNullable()
+                .WithColumn("QuantityForSale").AsInt32().WithDefaultValue(0)
                 .WithColumn("Description").AsString().Nullable()
                 .WithColumn("ImageURL").AsString().Nullable()
                 .WithColumn("ImagePublicId").AsString().Unique().Nullable();
@@ -49,11 +49,11 @@ namespace VSGMarketplaceApi.Data.Migrations
                 });
 
             Create.Table("Orders")
-                .WithColumn("Code").AsInt32().NotNullable().PrimaryKey()
+                .WithColumn("Code").AsInt32().NotNullable().PrimaryKey().Identity(1,1)
                 .WithColumn("ItemCode").AsInt32().NotNullable().ForeignKey("Items", "Code")
                 .WithColumn("Name").AsString(150).NotNullable()
-                .WithColumn("Quantity").AsInt16().NotNullable().WithDefaultValue(0)
-                .WithColumn("OrderPrice").AsInt16().NotNullable().WithDefaultValue(0)
+                .WithColumn("Quantity").AsInt32().NotNullable().WithDefaultValue(0)
+                .WithColumn("OrderPrice").AsInt32().NotNullable().WithDefaultValue(0)
                 .WithColumn("OrderedBy").AsString(150).NotNullable()
                 .WithColumn("OrderDate").AsDate().NotNullable()
                 .WithColumn("UserId").AsInt32()

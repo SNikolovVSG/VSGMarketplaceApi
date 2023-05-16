@@ -20,7 +20,7 @@ namespace VSGMarketplaceApi.Data.Repositories
             connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<string> AddAsync(NewOrderAddModel input)
+        public async Task<string> BuyAsync(NewOrderAddModel input)
         {
             using var connection = new SqlConnection(connectionString);
 

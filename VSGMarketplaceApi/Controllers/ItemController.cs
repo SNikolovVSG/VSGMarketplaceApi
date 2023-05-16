@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using NLog;
-using NLog.Web;
+﻿using Microsoft.AspNetCore.Mvc;
 using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.Data.Repositories.Interfaces;
+using VSGMarketplaceApi.Services.Interfaces;
 using VSGMarketplaceApi.ViewModels;
 
 namespace VSGMarketplaceApi.Controllers
@@ -12,20 +9,18 @@ namespace VSGMarketplaceApi.Controllers
     [ApiController]
     public class ItemController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
-        private readonly ILogger<ItemController> logger;
-
-        public ItemController(IUnitOfWork unitOfWork, ILogger<ItemController> logger)
+        private readonly IItemsService itemsService;
+        
+        public ItemController(IItemsService itemsService)
         {
-            this.unitOfWork = unitOfWork;
-            this.logger = logger;
+            this.itemsService = itemsService;
         }
 
         //[Authorize(Roles = "Administrator")]
         [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromForm] ItemAddModelString item)
         {
-            string result = await this.unitOfWork.Items.AddAsync(item);
+            string result = await this.itemsService.AddAsync(item);
 
             if (result != Constants.Ok)
             {
@@ -39,12 +34,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/Inventory/Modify/{code}")]
         public async Task<IActionResult> Edit([FromRoute] int code, [FromForm] ItemAddModelString item)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-
-            var result = await unitOfWork.Items.UpdateAsync(item, code);
+            string result = await itemsService.UpdateAsync(item, code);
             if (result != Constants.Ok)
             {
                 return BadRequest(result);
@@ -57,7 +47,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpDelete("~/DeleteItem/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
-            var result = await this.unitOfWork.Items.DeleteAsync(code);
+            string result = await this.itemsService.DeleteAsync(code);
             if (result != Constants.Ok)
             {
                 return BadRequest(result);
@@ -70,9 +60,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
         {
-            throw new Exception(" ebago");
-
-            var items = await this.unitOfWork.Items.GetInventoryItemsAsync();
+            var items = await this.itemsService.GetInventoryItemsAsync();
             return Ok(items);
         }
 
@@ -80,7 +68,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
-            var items = await this.unitOfWork.Items.GetMarketplaceItemsAsync();
+            var items = await this.itemsService.GetMarketplaceItemsAsync();
             return Ok(items);
         }
 
@@ -88,7 +76,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/Marketplace/{code}")]
         public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int code)
         {
-            var item = await this.unitOfWork.Items.GetMarketplaceItemAsync(code);
+            var item = await this.itemsService.GetMarketplaceItemAsync(code);
             return Ok(item);
         }
     }

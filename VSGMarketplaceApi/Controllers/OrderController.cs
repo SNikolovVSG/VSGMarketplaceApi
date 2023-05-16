@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.Data.Repositories.Interfaces;
+using VSGMarketplaceApi.Services.Interfaces;
 using VSGMarketplaceApi.ViewModels;
 
 namespace VSGMarketplaceApi.Controllers
@@ -10,17 +9,17 @@ namespace VSGMarketplaceApi.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IOrdersService ordersService;
 
-        public OrderController(IUnitOfWork unitOfWork)
+        public OrderController(IOrdersService ordersService)
         {
-            this.unitOfWork = unitOfWork; //ExceptionHandling => if result = 0 => lo6o bace
+            this.ordersService = ordersService; 
         }
 
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
-            var result = await this.unitOfWork.Orders.AddAsync(input);
+            string result = await this.ordersService.BuyAsync(input);
             if (result != Constants.Ok)
             {
                 return BadRequest(result);
@@ -33,7 +32,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/MyOrders/{userId}")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromRoute] int userId)
         {
-            var result = await this.unitOfWork.Orders.GetByUserId(userId);
+            var result = await this.ordersService.GetByUserId(userId);
             return Ok(result);
         }
 
@@ -41,7 +40,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/PendingOrder/{code}")]
         public async Task<ActionResult<Order>> ById([FromRoute] int code)
         {
-            var result = await this.unitOfWork.Orders.GetByCodeAsync(code);
+            var result = await this.ordersService.GetByCodeAsync(code);
             return Ok(result);
         }
 
@@ -49,7 +48,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
         {
-            var result = await this.unitOfWork.Orders.DeleteAsync(code, userId);
+            string result = await this.ordersService.DeleteAsync(code, userId);
 
             if (result != Constants.Ok)
             {
@@ -62,7 +61,7 @@ namespace VSGMarketplaceApi.Controllers
         //[Authorize(Roles = "Administrator")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
-            var orders = await this.unitOfWork.Orders.GetAllPendingOrdersAsync();
+            var orders = await this.ordersService.GetAllPendingOrdersAsync();
             return Ok(orders);
         }
 
@@ -70,7 +69,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)
         {
-            var result = await this.unitOfWork.Orders.CompleteAsync(code);
+            string result = await this.ordersService.CompleteAsync(code);
 
             if (result != Constants.Ok)
             {
