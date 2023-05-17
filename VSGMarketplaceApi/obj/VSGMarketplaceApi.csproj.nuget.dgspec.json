@@ -80,6 +80,10 @@
               "target": "Package",
               "version": "[6.0.15, )"
             },
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[6.0.13, )"
+            },
             "NLog.Database": {
               "target": "Package",
               "version": "[5.1.4, )"
@@ -94,7 +98,7 @@
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.2.3, )"
+              "version": "[6.3.0, )"
             },
             "System.Data.SqlClient": {
               "target": "Package",

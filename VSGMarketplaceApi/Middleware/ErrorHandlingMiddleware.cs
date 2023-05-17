@@ -29,7 +29,7 @@ namespace VSGMarketplaceApi.Middleware
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            logger.Error(exception);
+            logger.Error(exception, exception.Message);
 
             var code = HttpStatusCode.InternalServerError;
 

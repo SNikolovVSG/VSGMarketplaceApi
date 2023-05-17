@@ -16,11 +16,10 @@ namespace VSGMarketplaceApi.Data.Repositories
         private readonly IMapper mapper;
         private readonly IValidator<Item> validator;
         private readonly string connectionString;
-        private IMemoryCache memoryCache;
 
         private readonly IImageRepository imageRepository;
 
-        public ItemRepository(IConfiguration configuration, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IMemoryCache memoryCache)
+        public ItemRepository(IConfiguration configuration, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository)
         {
             this.configuration = configuration;
             this.mapper = mapper;
@@ -29,18 +28,20 @@ namespace VSGMarketplaceApi.Data.Repositories
             connectionString = this.configuration.GetConnectionString("DefaultConnection");
 
             this.imageRepository = imageRepository;
-            this.memoryCache = memoryCache;
         }
 
         public async Task<string> AddAsync(ItemAddModelString inputItem)
         {
             var item = mapper.Map<ItemAddModel>(inputItem);
 
-            if (item == null) { return "Invalid item"; };
+            if (item == null || !item.Image.ContentType.Contains("image")) { return "Invalid item"; };
 
             var result = validator.Validate(mapper.Map<Item>(item));
 
             if (!result.IsValid) { return "Validation error"; }
+
+            bool checkIfExistsItemWithSameCode = await CheckIfExistsItemWithSameCodeAsync(inputItem.Code);
+            if (checkIfExistsItemWithSameCode) { return "Item with same code exists!"; }
 
             using var connection = new SqlConnection(connectionString);
 
@@ -62,6 +63,15 @@ namespace VSGMarketplaceApi.Data.Repositories
             int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
 
             return changesByAddingItem > 0 ? Constants.Ok : Constants.DatabaseError;
+        }
+
+        private async Task<bool> CheckIfExistsItemWithSameCodeAsync(string? code)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            var item = await connection.QueryFirstAsync($"SELECT * FROM dbo.Items WHERE Code = {code}");
+
+            return item != null;
         }
 
         public async Task<string> DeleteAsync(int code)

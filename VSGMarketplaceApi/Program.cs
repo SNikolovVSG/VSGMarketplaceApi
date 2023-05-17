@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FluentMigrator.Runner;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NLog;
 using NLog.Web;
 using System.Reflection;
@@ -18,9 +17,11 @@ using VSGMarketplaceApi.Validators;
 
 
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
+
 try
 {
-    //Main TODO: Login
+    //Main TODO: Login, img validation
+
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
@@ -78,16 +79,17 @@ try
     //    });
 
     //Microsoft login
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-     .AddJwtBearer(options =>
-     {
-         options.Authority = builder.Configuration["AzureSettings:Authority"];
-         options.Audience = builder.Configuration["AzureSettings:Client"];
-     });
+    //builder.Services.AddAuthentication(options =>
+    //{
+    //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    //})
+    // .AddJwtBearer(options =>
+    // {
+    //     options.Authority = builder.Configuration["AzureSettings:Authority"];
+    //     options.Audience = builder.Configuration["AzureSettings:Client"];
+    // });
+
 
     //CORS
     builder.Services.AddCors(options =>
@@ -120,8 +122,8 @@ try
     builder.Services.AddSingleton(mapper);
 
     var app = builder.Build();
-    app.MigrateDatabase();
 
+    app.MigrateDatabase();
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
