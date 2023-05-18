@@ -65,15 +65,6 @@ namespace VSGMarketplaceApi.Data.Repositories
             return changesByAddingItem > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        private async Task<bool> CheckIfExistsItemWithSameCodeAsync(string? code)
-        {
-            using var connection = new SqlConnection(connectionString);
-
-            var item = await connection.QueryFirstAsync($"SELECT * FROM dbo.Items WHERE Code = {code}");
-
-            return item != null;
-        }
-
         public async Task<string> DeleteAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
@@ -145,6 +136,16 @@ namespace VSGMarketplaceApi.Data.Repositories
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
+
+        private async Task<bool> CheckIfExistsItemWithSameCodeAsync(string? code)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            var item = await connection.QueryFirstAsync($"SELECT * FROM dbo.Items WHERE Code = {code}");
+
+            return item != null;
+        }
+
     }
 }
 

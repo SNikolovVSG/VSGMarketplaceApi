@@ -36,6 +36,8 @@ namespace VSGMarketplaceApi.Data.Repositories
                 return "Wrong item Code";
             }
 
+            if (item == null) { return "There isn't item with this code."; }
+
             bool checkForQuantity = item.QuantityForSale < input.Quantity;
             if (checkForQuantity)
             {
