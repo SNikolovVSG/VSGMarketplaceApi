@@ -15,6 +15,7 @@ using Helpers.Profiles;
 using Services;
 using Services.Interfaces;
 using Helpers.Validators;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
@@ -32,7 +33,7 @@ try
     builder.Services.AddFluentMigratorCore()
             .ConfigureRunner(c => c.AddSqlServer2012()
                 .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
-                .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
+                .ScanIn(Assembly.Load(GetAssembly())).For.Migrations());
 
     //builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
     //    .AddFluentMigratorCore()
@@ -82,19 +83,19 @@ try
     //Microsoft.AspNetCore.Authentication.JwtBearer
     //System.IdentityModel.Tokens.Jwt
     //Microsoft login
-    //builder.Services.AddAuthentication(options =>
-    //{
-    //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    //})
-    // .AddJwtBearer(options =>
-    // {
-    //     options.Authority = builder.Configuration["AzureSettings:Authority"];
-    //     options.Audience = builder.Configuration["AzureSettings:Client"];
-    // });
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+     .AddJwtBearer(options =>
+     {
+         options.Authority = builder.Configuration["AzureSettings:Authority"];
+         options.Audience = builder.Configuration["AzureSettings:Client"];
+     });
 
-    builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme)
-        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+    //builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme)
+    //    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
     //CORS
     builder.Services.AddCors(options =>
@@ -146,7 +147,7 @@ try
     app.UseAuthentication();
 
     app.UseRouting();
-
+    
     app.UseAuthorization();
 
     app.MapControllers();
@@ -161,4 +162,11 @@ catch (Exception ex)
 finally
 {
     LogManager.Shutdown();
+}
+
+AssemblyName GetAssembly()
+{
+    var assemblies = Assembly.GetEntryAssembly().GetReferencedAssemblies();
+    var assembly = assemblies.FirstOrDefault(x => x.Name.Contains("Data"));
+    return assembly;
 }

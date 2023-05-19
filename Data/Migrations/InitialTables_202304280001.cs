@@ -9,6 +9,14 @@ namespace Data.Migrations
     {
         public override void Up()
         {
+            Create.Table("Logs")
+                .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
+                .WithColumn("Date").AsDate()
+                .WithColumn("Level").AsString()
+                .WithColumn("Message").AsString()
+                .WithColumn("MachineName").AsString()
+                .WithColumn("Logger").AsString();
+
             Create.Table("Items")
                 .WithColumn("Code").AsInt32().NotNullable().PrimaryKey()
                 .WithColumn("Name").AsString(150).NotNullable()
@@ -84,14 +92,6 @@ namespace Data.Migrations
                     Password = "123456",
                     Role = "Admin"
                 });
-
-            Create.Table("Logs")
-                .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
-                .WithColumn("Date").AsDate()
-                .WithColumn("Level").AsString()
-                .WithColumn("Message").AsString()
-                .WithColumn("MachineName").AsString()
-                .WithColumn("Logger").AsString();
         }
 
         public override void Down()

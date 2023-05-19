@@ -336,3 +336,4 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Helper
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Services.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Helpers.pdb
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Services.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\libman.json
