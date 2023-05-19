@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Data.SqlClient;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
-using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.ViewModels;
+using Data.Models;
+using Data.ViewModels;
 
 namespace VSGMarketplaceApi.Controllers
 {

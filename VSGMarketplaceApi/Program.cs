@@ -1,26 +1,27 @@
 ﻿using AutoMapper;
 using FluentMigrator.Runner;
 using FluentValidation;
+using Microsoft.Identity.Web;
 using NLog;
 using NLog.Web;
 using System.Reflection;
-using VSGMarketplaceApi.Data;
-using VSGMarketplaceApi.Data.Extensions;
-using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.Data.Repositories;
-using VSGMarketplaceApi.Data.Repositories.Interfaces;
-using VSGMarketplaceApi.Middleware;
-using VSGMarketplaceApi.Profiles;
-using VSGMarketplaceApi.Services;
-using VSGMarketplaceApi.Services.Interfaces;
-using VSGMarketplaceApi.Validators;
+using Data;
+using Data.Extensions;
+using Data.Models;
+using Data.Repositories;
+using Data.Repositories.Interfaces;
+using Helpers.Middleware;
+using Helpers.Profiles;
+using Services;
+using Services.Interfaces;
+using Helpers.Validators;
 
 
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 
 try
 {
-    //Main TODO: Login, img validation
+    //Main TODO: Login, projects
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +79,8 @@ try
     //        };
     //    });
 
+    //Microsoft.AspNetCore.Authentication.JwtBearer
+    //System.IdentityModel.Tokens.Jwt
     //Microsoft login
     //builder.Services.AddAuthentication(options =>
     //{
@@ -90,6 +93,8 @@ try
     //     options.Audience = builder.Configuration["AzureSettings:Client"];
     // });
 
+    builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
     //CORS
     builder.Services.AddCors(options =>
@@ -140,7 +145,7 @@ try
 
     app.UseAuthentication();
 
-    //app.UseRouting();
+    app.UseRouting();
 
     app.UseAuthorization();
 

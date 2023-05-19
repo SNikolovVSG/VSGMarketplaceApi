@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using VSGMarketplaceApi.Data.Models;
-using VSGMarketplaceApi.Services.Interfaces;
-using VSGMarketplaceApi.ViewModels;
+using Data.Models;
+using Services.Interfaces;
+using Data.ViewModels;
 
 namespace VSGMarketplaceApi.Controllers
 {

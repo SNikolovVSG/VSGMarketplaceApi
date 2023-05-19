@@ -1,0 +1,15 @@
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\bin\Debug\net6.0\Helpers.deps.json
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\bin\Debug\net6.0\Helpers.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\bin\Debug\net6.0\Helpers.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\bin\Debug\net6.0\Data.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\bin\Debug\net6.0\Data.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.csproj.AssemblyReference.cache
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.GeneratedMSBuildEditorConfig.editorconfig
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.AssemblyInfoInputs.cache
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.AssemblyInfo.cs
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.csproj.CoreCompileInputs.cache
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.csproj.CopyComplete
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\refint\Helpers.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\Helpers.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\Helpers\obj\Debug\net6.0\ref\Helpers.dll
