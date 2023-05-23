@@ -63,7 +63,7 @@ namespace Data.Migrations
                 .WithColumn("Quantity").AsInt32().NotNullable().WithDefaultValue(0)
                 .WithColumn("OrderPrice").AsDecimal().NotNullable().WithDefaultValue(0)
                 .WithColumn("OrderedBy").AsString(150).NotNullable()
-                .WithColumn("OrderDate").AsDate().NotNullable()
+                .WithColumn("OrderDate").AsDateTime2().NotNullable()
                 .WithColumn("Status").AsString().WithDefaultValue(Constants.Pending)
                 .WithColumn("IsDeleted").AsBoolean().WithDefaultValue(false);
 
