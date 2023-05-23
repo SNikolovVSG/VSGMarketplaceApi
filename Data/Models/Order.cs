@@ -33,9 +33,6 @@ namespace Data.Models
         public string Status { get; set; }
 
         [Required]
-        public int UserId { get; set; }
-
-        [Required]
         public bool IsDeleted { get; set; }
     }
 }

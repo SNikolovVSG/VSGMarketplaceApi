@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace VSGMarketplaceApi.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
@@ -18,9 +18,12 @@ namespace VSGMarketplaceApi.Controllers
             this.ordersService = ordersService; 
         }
 
+        //[Authorize(Policy = "AdminOnly")]
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
+            var userEmail = HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
+            input.UserEmail = userEmail;
             string result = await this.ordersService.BuyAsync(input);
             if (result != Constants.Ok)
             {
@@ -30,10 +33,11 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
-        [HttpGet("~/MyOrders/{userId}")]
-        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromRoute] int userId)
+        [HttpGet("~/MyOrders")]
+        public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders()
         {
-            var result = await this.ordersService.GetByUserId(userId);
+            var userEmail = HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
+            var result = await this.ordersService.GetByUserEmail(userEmail);
             return Ok(result);
         }
 
@@ -45,9 +49,10 @@ namespace VSGMarketplaceApi.Controllers
         }
 
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
-            string result = await this.ordersService.DeleteAsync(code, userId);
+            var userEmail = HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
+            string result = await this.ordersService.DeleteAsync(code, userEmail);
 
             if (result != Constants.Ok)
             {

@@ -47,27 +47,15 @@ namespace Data.Repositories
 
             var orderPrice = item.Price * input.Quantity;
 
-            string userEmail = "";
-            try
-            {
-                var selectUserEmailSQL = "SELECT email FROM dbo.Users WHERE id = @Id";
-                userEmail = await connection.QueryFirstAsync<string>(selectUserEmailSQL, new { Id = input.UserId });
-            }
-            catch (Exception)
-            {
-                return "User error";
-            }
-
             var order = new Order
             {
                 ItemCode = input.ItemCode,
                 Name = item.Name,
                 Quantity = input.Quantity,
                 OrderPrice = orderPrice,
-                OrderedBy = userEmail,
+                OrderedBy = input.UserEmail,
                 OrderDate = DateTime.Now.Date,
                 Status = Constants.Pending,
-                UserId = input.UserId,
                 IsDeleted = false,
             };
 
@@ -76,7 +64,7 @@ namespace Data.Repositories
             if (!result.IsValid) { return Constants.ValidationError; }
 
             var addOrderSQL =
-                "INSERT INTO dbo.Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @UserId, @IsDeleted)";
+                "INSERT INTO dbo.Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
 
             var updateItemQuantitySQL = "UPDATE dbo.Items SET quantityForSale = @Count WHERE code = @ItemCode";
 
@@ -102,7 +90,7 @@ namespace Data.Repositories
             return changesByCompleting > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string> DeleteAsync(int code, int userId)
+        public async Task<string> DeleteAsync(int code, string userEmail)
         {
             int changesByItemsQuantity = 0;
             using var connection = new SqlConnection(connectionString);
@@ -118,7 +106,7 @@ namespace Data.Repositories
                 return "Wrong order";
             }
 
-            if (order == null || order.UserId != userId)
+            if (order == null || order.OrderedBy != userEmail)
             {
                 return "Not your order!";
             }
@@ -169,14 +157,14 @@ namespace Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<MyOrdersViewModel>> GetByUserId(int userId)
+        public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail)
         {
             using var connection = new SqlConnection(connectionString);
 
             try
             {
                 var orders = await connection.QueryAsync<MyOrdersViewModel>
-                    ("SELECT ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, UserId FROM [VSGMarketplace].[dbo].[Orders] AS orT  INNER JOIN Users as usS on usS.Email = orT.OrderedBy WHERE usS.Id = @Id AND IsDeleted = 0", new { Id = userId });
+                    ("SELECT ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM [VSGMarketplace].[dbo].[Orders]  WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
                 return orders;
             }
             catch (Exception)

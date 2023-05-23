@@ -7,7 +7,7 @@ namespace Helpers.Validators
     {
         public OrderValidator()
         {
-            RuleFor(order => order.UserId).NotEmpty();
+            RuleFor(order => order.OrderedBy).NotEmpty();
             RuleFor(order => order.OrderPrice).NotEmpty().GreaterThanOrEqualTo(0);
             RuleFor(order => order.ItemCode).NotEmpty().GreaterThan(0);
             RuleFor(order => order.OrderDate).NotEmpty();

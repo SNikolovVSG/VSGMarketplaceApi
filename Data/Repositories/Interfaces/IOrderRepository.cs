@@ -8,8 +8,8 @@ namespace Data.Repositories.Interfaces
         Task<Order> GetByCodeAsync(int code);
         Task<string> BuyAsync(NewOrderAddModel entity);
         Task<string> CompleteAsync(int code);
-        Task<string> DeleteAsync(int code, int userId);
-        Task<IEnumerable<MyOrdersViewModel>> GetByUserId(int userId);
+        Task<string> DeleteAsync(int code, string userEmail);  
+        Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail);
         Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync();
     }
 }

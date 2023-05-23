@@ -51,9 +51,9 @@ namespace Services
             return result;
         }
 
-        public async Task<string> DeleteAsync(int code, int userId)
+        public async Task<string> DeleteAsync(int code, string userEmail)
         {
-            string result = await repository.DeleteAsync(code, userId);
+            string result = await repository.DeleteAsync(code, userEmail);
 
             if (result != Constants.Ok)
             {
@@ -104,21 +104,21 @@ namespace Services
             return order;
         }
 
-        public async Task<IEnumerable<MyOrdersViewModel>> GetByUserId(int userId)
+        public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail)
         {
-            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY + userId.ToString(), out IEnumerable<MyOrdersViewModel> orders))
+            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY + userEmail.ToString(), out IEnumerable<MyOrdersViewModel> orders))
             {
                 return orders;
             }
 
-            orders = await repository.GetByUserId(userId);
+            orders = await repository.GetByUserEmail(userEmail);
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(MY_ORDERS_CACHE_KEY + userId.ToString(), orders, options);
+            memoryCache.Set(MY_ORDERS_CACHE_KEY + userEmail.ToString(), orders, options);
 
             return orders;
         }

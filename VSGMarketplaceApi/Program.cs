@@ -17,7 +17,7 @@ using Helpers.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
-
+//Main TODO: UserId => UserEmail
 try
 {
     var builder = WebApplication.CreateBuilder(args);
