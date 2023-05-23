@@ -54,7 +54,7 @@ namespace Data.Repositories
                 Quantity = input.Quantity,
                 OrderPrice = orderPrice,
                 OrderedBy = input.UserEmail,
-                OrderDate = DateTime.Now.Date,
+                OrderDate = DateTime.Now,
                 Status = Constants.Pending,
                 IsDeleted = false,
             };
@@ -164,7 +164,7 @@ namespace Data.Repositories
             try
             {
                 var orders = await connection.QueryAsync<MyOrdersViewModel>
-                    ("SELECT ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM [VSGMarketplace].[dbo].[Orders]  WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
+                    ("SELECT Code, ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM [VSGMarketplace].[dbo].[Orders]  WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
                 return orders;
             }
             catch (Exception)

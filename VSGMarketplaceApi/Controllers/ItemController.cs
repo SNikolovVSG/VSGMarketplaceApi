@@ -69,7 +69,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(items);
         }
 
-        [HttpGet("~/Marketplace")]
+        [HttpGet("~/")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
             var items = await this.itemsService.GetMarketplaceItemsAsync();

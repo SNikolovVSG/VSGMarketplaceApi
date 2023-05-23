@@ -1,0 +1,15 @@
+D:\Resources\vsg api\VSGMarketplaceApi\Services\bin\Release\net6.0\Services.deps.json
+D:\Resources\vsg api\VSGMarketplaceApi\Services\bin\Release\net6.0\Services.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Services\bin\Release\net6.0\Services.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\Services\bin\Release\net6.0\Data.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Services\bin\Release\net6.0\Data.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.csproj.AssemblyReference.cache
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.GeneratedMSBuildEditorConfig.editorconfig
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.AssemblyInfoInputs.cache
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.AssemblyInfo.cs
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.csproj.CoreCompileInputs.cache
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.csproj.CopyComplete
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\refint\Services.dll
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\Services.pdb
+D:\Resources\vsg api\VSGMarketplaceApi\Services\obj\Release\net6.0\ref\Services.dll

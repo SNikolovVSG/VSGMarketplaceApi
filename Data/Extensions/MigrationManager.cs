@@ -15,7 +15,7 @@ namespace Data.Extensions
 
                 try
                 {
-                    databaseService.CreateDatabase("VSGMarketplace");
+                    databaseService.CreateDatabase("MarketPlaceSpartak");//TODO - > initial catalog, hard coded + nlog.config, remove hard code
 
                     migrationService.ListMigrations();
                     migrationService.MigrateUp();

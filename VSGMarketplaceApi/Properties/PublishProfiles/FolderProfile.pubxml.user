@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Release\net6.0\publish\</_PublishTargetUrl>
+    <History>True|2023-05-23T11:19:56.6886125Z;True|2023-05-23T13:43:47.7690193+03:00;True|2023-05-23T13:33:29.8412543+03:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

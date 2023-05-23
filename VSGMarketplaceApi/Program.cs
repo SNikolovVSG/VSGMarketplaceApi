@@ -74,7 +74,7 @@ try
     });
 
     builder.Services.AddControllers().AddNewtonsoftJson();
-    
+
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
     builder.Services.AddMemoryCache();
@@ -93,18 +93,15 @@ try
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     app.UseCors("MyCorsPolicy");
 
     app.UseHttpsRedirection();
 
     app.UseRouting();
-    
+
     app.UseAuthentication();
     app.UseAuthorization();
 

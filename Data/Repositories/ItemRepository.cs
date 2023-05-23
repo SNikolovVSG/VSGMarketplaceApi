@@ -55,8 +55,8 @@ namespace Data.Repositories
                 item.ImagePublicId = imageData[1];
             }
 
-            bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
-            if (!categoryExist) { return "Category error"; }
+            //bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
+            //if (!categoryExist) { return "Category error"; }
 
             string addItemSQL = "INSERT INTO dbo.Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);";
 
@@ -141,7 +141,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var item = await connection.QueryFirstAsync($"SELECT * FROM dbo.Items WHERE Code = {code}");
+            var item = await connection.QueryFirstOrDefaultAsync($"SELECT * FROM dbo.Items WHERE Code = {code}");
 
             return item != null;
         }
