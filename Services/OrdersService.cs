@@ -31,7 +31,7 @@ namespace Services
             }
 
             memoryCache.Remove(PENDING_ORDERS_CACHE_KEY);
-            memoryCache.Remove(MY_ORDERS_CACHE_KEY);
+            memoryCache.Remove(MY_ORDERS_CACHE_KEY + input.UserEmail);
 
             return result;
         }
@@ -45,8 +45,8 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(PENDING_ORDERS_CACHE_KEY);
-            memoryCache.Remove(MY_ORDERS_CACHE_KEY);
+            try { memoryCache.Dispose(); }
+            catch { }
 
             return result;
         }
@@ -61,7 +61,7 @@ namespace Services
             }
 
             memoryCache.Remove(PENDING_ORDERS_CACHE_KEY);
-            memoryCache.Remove(MY_ORDERS_CACHE_KEY);
+            memoryCache.Remove(MY_ORDERS_CACHE_KEY + userEmail);
 
             return result;
         }
@@ -106,7 +106,7 @@ namespace Services
 
         public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail)
         {
-            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY, out IEnumerable<MyOrdersViewModel> orders))
+            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY + userEmail, out IEnumerable<MyOrdersViewModel> orders))
             {
                 return orders;
             }
@@ -118,7 +118,7 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(MY_ORDERS_CACHE_KEY, orders, options);
+            memoryCache.Set(MY_ORDERS_CACHE_KEY + userEmail, orders, options);
 
             return orders;
         }
