@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FluentMigrator.Runner;
 using FluentValidation;
-using Microsoft.Identity.Web;
 using NLog;
 using NLog.Web;
 using System.Reflection;
@@ -17,40 +16,28 @@ using Services.Interfaces;
 using Helpers.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 
 try
 {
-    //Main TODO: Login, projects
-
     var builder = WebApplication.CreateBuilder(args);
 
-    // Add services to the container.
     builder.Services.AddSingleton<DapperContext>();
     builder.Services.AddSingleton<Database>();
 
     builder.Services.AddFluentMigratorCore()
             .ConfigureRunner(c => c.AddSqlServer2012()
                 .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
-                .ScanIn(Assembly.Load(GetAssembly())).For.Migrations());
-
-    //builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
-    //    .AddFluentMigratorCore()
-    //        .ConfigureRunner(c => c.AddSqlServer2012()
-    //            .WithGlobalConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"))
-    //            .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations());
+                .ScanIn(Assembly.Load(GetAssembly("Data"))).For.Migrations());
 
     builder.Services.AddControllers();
 
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
-    //probvai vs scoped
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
     builder.Services.AddScoped<IItemRepository, ItemRepository>();
@@ -62,61 +49,34 @@ try
     builder.Services.AddScoped<IOrdersService, OrdersService>();
     builder.Services.AddScoped<IItemsService, ItemsService>();
 
-    //JWT
-    //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    //    .AddJwtBearer(options =>
-    //    {
-    //        options.RequireHttpsMetadata = true;
-    //        options.SaveToken = true;
-    //        options.TokenValidationParameters = new TokenValidationParameters()
-    //        {
-    //            ValidateIssuer = true,
-    //            ValidateAudience = true,
-    //            ValidateLifetime = true,
-    //            ValidateIssuerSigningKey = true,
-    //            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-    //            ValidAudience = builder.Configuration["Jwt:Audience"],
-    //            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    //        };
-    //    });
-
-    //Microsoft.AspNetCore.Authentication.JwtBearer
-    //System.IdentityModel.Tokens.Jwt
-    //Microsoft login
     builder.Services.AddAuthentication(options =>
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-     .AddJwtBearer(options =>
-     {
-         options.Authority = builder.Configuration["AzureSettings:Authority"];
-         options.Audience = builder.Configuration["AzureSettings:Client"];
-     });
+    .AddJwtBearer(options =>
+    {
+        options.Audience = builder.Configuration["AzureSettings:Client"];
+        options.Authority = builder.Configuration["AzureSettings:Authority"];
+    });
 
-    //builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme)
-    //    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+    builder.Services.AddAuthorization
+        (options => { options.AddPolicy("AdminOnly", policy => policy.RequireClaim("groups", "f2123818-3d51-4fe4-990b-b072a80da143")); });
 
-    //CORS
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("MyCorsPolicy", builder => builder
-        //.WithOrigins("http://localhost:5500/")
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
         .WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header"));
     });
 
-    builder.Services.AddAuthorization();
-
-    //JSON add
     builder.Services.AddControllers().AddNewtonsoftJson();
-
-    //auto mapper
+    
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-    //Caching
     builder.Services.AddMemoryCache();
 
     var config = new MapperConfiguration(cfg =>
@@ -133,7 +93,6 @@ try
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
-    // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
@@ -144,10 +103,9 @@ try
 
     app.UseHttpsRedirection();
 
-    app.UseAuthentication();
-
     app.UseRouting();
     
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();
@@ -157,16 +115,15 @@ try
 catch (Exception ex)
 {
     logger.Error(ex, ex.Message);
-    //throw ex;
 }
 finally
 {
     LogManager.Shutdown();
 }
 
-AssemblyName GetAssembly()
+AssemblyName GetAssembly(string assemblyName)
 {
     var assemblies = Assembly.GetEntryAssembly().GetReferencedAssemblies();
-    var assembly = assemblies.FirstOrDefault(x => x.Name.Contains("Data"));
+    var assembly = assemblies.FirstOrDefault(x => x.Name.Contains(assemblyName));
     return assembly;
 }

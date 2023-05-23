@@ -2,9 +2,11 @@
 using Data.Models;
 using Services.Interfaces;
 using Data.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace VSGMarketplaceApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
@@ -28,7 +30,6 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
-        //[Authorize]
         [HttpGet("~/MyOrders/{userId}")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders([FromRoute] int userId)
         {
@@ -36,7 +37,6 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(result);
         }
 
-        //[Authorize]
         [HttpGet("~/PendingOrder/{code}")]
         public async Task<ActionResult<Order>> ById([FromRoute] int code)
         {
@@ -44,7 +44,6 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(result);
         }
 
-        //[Authorize]
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code, [FromBody] int userId)
         {
@@ -57,15 +56,15 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("~/PendingOrders")]
-        //[Authorize(Roles = "Administrator")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
             var orders = await this.ordersService.GetAllPendingOrdersAsync();
             return Ok(orders);
         }
 
-        //[Authorize(Roles = "Administrator")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("~/PendingOrders/Complete/{code}")]
         public async Task<IActionResult> Complete([FromRoute] int code)
         {

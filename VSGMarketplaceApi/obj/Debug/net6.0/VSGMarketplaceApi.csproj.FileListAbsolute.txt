@@ -337,3 +337,4 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Servic
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Helpers.pdb
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Services.pdb
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\libman.json
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.AzureAD.UI.dll
