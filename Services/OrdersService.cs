@@ -106,7 +106,7 @@ namespace Services
 
         public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail)
         {
-            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY + userEmail.ToString(), out IEnumerable<MyOrdersViewModel> orders))
+            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY, out IEnumerable<MyOrdersViewModel> orders))
             {
                 return orders;
             }
@@ -118,7 +118,7 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(MY_ORDERS_CACHE_KEY + userEmail.ToString(), orders, options);
+            memoryCache.Set(MY_ORDERS_CACHE_KEY, orders, options);
 
             return orders;
         }
