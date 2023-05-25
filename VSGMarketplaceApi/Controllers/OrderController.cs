@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace VSGMarketplaceApi.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
@@ -18,12 +18,9 @@ namespace VSGMarketplaceApi.Controllers
             this.ordersService = ordersService; 
         }
 
-        //[Authorize(Policy = "AdminOnly")]
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
-            var userEmail = HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
-            input.UserEmail = userEmail;
             string result = await this.ordersService.BuyAsync(input);
             if (result != Constants.Ok)
             {
@@ -36,8 +33,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/MyOrders")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders()
         {
-            var userEmail = HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
-            var result = await this.ordersService.GetByUserEmail(userEmail);
+            var result = await this.ordersService.GetByUserEmail();
             return Ok(result);
         }
 
@@ -51,8 +47,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/MyOrders/DeleteOrder/{code}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] int code)
         {
-            var userEmail = HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
-            string result = await this.ordersService.DeleteAsync(code, userEmail);
+            string result = await this.ordersService.DeleteAsync(code);
 
             if (result != Constants.Ok)
             {

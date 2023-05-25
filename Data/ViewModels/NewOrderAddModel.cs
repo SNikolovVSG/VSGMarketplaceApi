@@ -5,7 +5,6 @@
         public int ItemCode { get; set; }
 
         public int Quantity { get; set; }
-
-        public string? UserEmail { get; set; }
     }
+
 }

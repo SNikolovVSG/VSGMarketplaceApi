@@ -22,9 +22,6 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromForm] ItemAddModelString item)
         {
-            var isAdmin = HttpContext.User.Claims.Any(x => x.Value == "f2123818-3d51-4fe4-990b-b072a80da143");
-            if (!isAdmin) { return BadRequest("You don't have permission to do this!"); }
-
             string result = await this.itemsService.AddAsync(item);
 
             if (result != Constants.Ok)

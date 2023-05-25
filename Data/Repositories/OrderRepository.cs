@@ -21,7 +21,7 @@ namespace Data.Repositories
             this.connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<string> BuyAsync(NewOrderAddModel input)
+        public async Task<string> BuyAsync(NewOrderAddModel input, string userEmail)
         {
             using var connection = new SqlConnection(connectionString);
 
@@ -53,7 +53,7 @@ namespace Data.Repositories
                 Name = item.Name,
                 Quantity = input.Quantity,
                 OrderPrice = orderPrice,
-                OrderedBy = input.UserEmail,
+                OrderedBy = userEmail,
                 OrderDate = DateTime.Now,
                 Status = Constants.Pending,
                 IsDeleted = false,
@@ -164,7 +164,7 @@ namespace Data.Repositories
             try
             {
                 var orders = await connection.QueryAsync<MyOrdersViewModel>
-                    ("SELECT Code, ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM [VSGMarketplace].[dbo].[Orders]  WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
+                    ("SELECT Code, ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM dbo.Orders  WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
                 return orders;
             }
             catch (Exception)

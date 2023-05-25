@@ -3,6 +3,7 @@ using Data.Models;
 using Data.Repositories.Interfaces;
 using Services.Interfaces;
 using Data.ViewModels;
+using Microsoft.AspNetCore.Http;
 
 namespace Services
 {
@@ -15,10 +16,14 @@ namespace Services
         private string MARKETPLACE_ITEMS_CACHE_KEY = "MarketplaceItems";
         private string MARKETPLACE_ITEM_CACHE_KEY = "MarketplaceItem";
 
+        private HttpContextAccessor httpContextAccessor;
+
         public ItemsService(IItemRepository repository, IMemoryCache memoryCache)
         {
             this.repository = repository;
             this.memoryCache = memoryCache;
+
+            this.httpContextAccessor = new HttpContextAccessor();
         }
 
         public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
@@ -81,8 +86,8 @@ namespace Services
         public async Task<string> AddAsync(ItemAddModelString inputItem)
         {
             string result = await this.repository.AddAsync(inputItem);
-            
-            if (result != Constants.Ok) 
+
+            if (result != Constants.Ok)
             {
                 return result;
             }
@@ -94,8 +99,8 @@ namespace Services
         public async Task<string> DeleteAsync(int code)
         {
             string result = await this.repository.DeleteAsync(code);
-            
-            if (result != Constants.Ok) 
+
+            if (result != Constants.Ok)
             {
                 return result;
             }

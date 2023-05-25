@@ -9,13 +9,13 @@ namespace Services.Interfaces
 
         public Task<string> CompleteAsync(int code);
 
-        public Task<string> DeleteAsync(int code, string userEmail);
+        public Task<string> DeleteAsync(int code);
 
         public Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync();
 
         public Task<Order> GetByCodeAsync(int code);
 
-        public Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail);
+        public Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail();
 
     }
 }
