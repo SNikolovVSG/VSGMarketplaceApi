@@ -9,8 +9,8 @@ namespace Helpers.Profiles
         public MappingProfile()
         {
             CreateMap<ItemAddModel, Item>();
-            CreateMap<ItemAddModelString, Item>();
-            CreateMap<ItemAddModelString, ItemAddModel>();
+            CreateMap<ItemAddModelWithFormFile, Item>();
+            CreateMap<ItemAddModelWithFormFile, ItemAddModel>();
 
             CreateMap<Item, ItemViewModel>();
             CreateMap<Item, InventoryItemViewModel>();

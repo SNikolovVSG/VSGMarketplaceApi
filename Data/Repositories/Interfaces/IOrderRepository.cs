@@ -6,10 +6,11 @@ namespace Data.Repositories.Interfaces
     public interface IOrderRepository
     {
         Task<Order> GetByCodeAsync(int code);
-        Task<string> BuyAsync(NewOrderAddModel entity, string userEmail);
+        Task<string> BuyAsync(Order order, Item item);
         Task<string> CompleteAsync(int code);
-        Task<string> DeleteAsync(int code, string userEmail);  
+        Task<string> DeleteAsync(int code);  
         Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail);
         Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync();
+        Task<string> RevertChangesFromPendingOrder(Order order);
     }
 }

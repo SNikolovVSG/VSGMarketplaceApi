@@ -10,10 +10,10 @@ namespace Services.Interfaces
 
         public Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code);
 
-        public Task<string> AddAsync(ItemAddModelString inputItem);
+        public Task<string> AddAsync(ItemAddModelWithFormFile inputItem);
 
         public Task<string> DeleteAsync(int code);
 
-        public Task<string> UpdateAsync(ItemAddModelString inputItem, int code);
+        public Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int code);
     }
 }

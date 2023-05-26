@@ -25,7 +25,7 @@ namespace Data.ViewModels
         public string ImagePublicId { get; set; }
     }
 
-    public class ItemAddModelString
+    public class ItemAddModelWithFormFile
     {
         public string? Code { get; set; }
 

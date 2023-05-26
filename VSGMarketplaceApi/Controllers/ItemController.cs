@@ -20,7 +20,7 @@ namespace VSGMarketplaceApi.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpPost("~/Inventory/AddItem")]
-        public async Task<IActionResult> AddAsync([FromForm] ItemAddModelString item)
+        public async Task<IActionResult> AddAsync([FromForm] ItemAddModelWithFormFile item)
         {
             string result = await this.itemsService.AddAsync(item);
 
@@ -34,8 +34,9 @@ namespace VSGMarketplaceApi.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpPut("~/Inventory/Modify/{code}")]
-        public async Task<IActionResult> Edit([FromRoute] int code, [FromForm] ItemAddModelString item)
+        public async Task<IActionResult> Edit([FromRoute] int code, [FromForm] ItemAddModelWithFormFile item)
         {
+
             string result = await itemsService.UpdateAsync(item, code);
             if (result != Constants.Ok)
             {
@@ -66,7 +67,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(items);
         }
 
-        [HttpGet("~/")]
+        [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
             var items = await this.itemsService.GetMarketplaceItemsAsync();

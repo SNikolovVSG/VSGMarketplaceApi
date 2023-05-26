@@ -24,7 +24,6 @@ namespace Data.Repositories
             apiKey = this.configuration.GetValue<string>("CloudinarySettings:ApiKey");
             apiSecret = this.configuration.GetValue<string>("CloudinarySettings:ApiSecret");
 
-
             cloudinary = new Cloudinary(new Account(cloudName, apiKey, apiSecret));
         }
 
@@ -42,7 +41,10 @@ namespace Data.Repositories
 
         public async Task<string[]> UpdateImageAsync(IFormFile image, string publicId)
         {
-            var result = await cloudinary.DestroyAsync(new DeletionParams(publicId));
+            if (!string.IsNullOrEmpty(publicId))
+            {
+                await cloudinary.DestroyAsync(new DeletionParams(publicId));
+            }
 
             return await UploadImageAsync(image);
         }

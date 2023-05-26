@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Dapper;
-using FluentValidation;
-using System.Data.SqlClient;
 using Data.ViewModels;
 using Data.Repositories.Interfaces;
 using Data.Models;
+using FluentValidation;
+using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
 namespace Data.Repositories
@@ -29,36 +29,10 @@ namespace Data.Repositories
             this.imageRepository = imageRepository;
         }
 
-        public async Task<string> AddAsync(ItemAddModelString inputItem)
+        public async Task<string> AddAsync(Item item)
         {
-            var item = mapper.Map<ItemAddModel>(inputItem);
-
-            if (item == null || !item.Image.ContentType.Contains("image")) { return "Invalid item"; };
-
-            var result = validator.Validate(mapper.Map<Item>(item));
-
-            if (!result.IsValid) { return "Validation error"; }
-
-            bool checkIfExistsItemWithSameCode = await CheckIfExistsItemWithSameCodeAsync(inputItem.Code);
-            if (checkIfExistsItemWithSameCode) { return "Item with same code exists!"; }
-
             using var connection = new SqlConnection(connectionString);
-
-            if (item.Image != null)
-            {
-                var imageData = await imageRepository.UploadImageAsync(item.Image);
-
-                if (string.IsNullOrEmpty(imageData[0]) || string.IsNullOrEmpty(imageData[1]) )
-                    { return "Image error"; }
-
-                item.ImageURL = imageData[0];
-                item.ImagePublicId = imageData[1];
-            }
-
-            //bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
-            //if (!categoryExist) { return "Category error"; }
-
-            string addItemSQL = "INSERT INTO dbo.Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);";
+            string addItemSQL = "INSERT INTO Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);";
 
             int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
 
@@ -68,16 +42,24 @@ namespace Data.Repositories
         public async Task<string> DeleteAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
-            var result = await connection.ExecuteAsync("DELETE FROM dbo.Items WHERE code = @Code", new { Code = code });
+            int changesByDeletingItem = await connection.ExecuteAsync("DELETE FROM Items WHERE code = @Code", new { Code = code });
 
-            return result > 0 ? Constants.Ok : Constants.DatabaseError;
+            return changesByDeletingItem > 0 ? Constants.Ok : Constants.DatabaseError;
+        }
+
+        public async Task<Item> GetByCode(int code)
+        {
+            using var connection = new SqlConnection(connectionString);
+            Item item = await connection.QueryFirstOrDefaultAsync<Item>("SELECT * FROM Items WHERE code = @Code", new { Code = code });
+
+            return item;
         }
 
         public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectAllItemsSQL = "SELECT * FROM dbo.Items";
+            var selectAllItemsSQL = "SELECT * FROM Items";
             var items = await connection.QueryAsync<InventoryItemViewModel>(selectAllItemsSQL);
 
             return items;
@@ -87,7 +69,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectItemByCodeSQL = "SELECT * FROM dbo.Items WHERE code = @Code";
+            var selectItemByCodeSQL = "SELECT * FROM Items WHERE code = @Code";
             var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>(selectItemByCodeSQL, new { Code = code });
 
             if (item == null || item.QuantityForSale <= 0) { return null; }
@@ -99,53 +81,34 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectAllMarketplaceItemsSQL = "SELECT * FROM dbo.Items WHERE quantityForSale > 0";
+            var selectAllMarketplaceItemsSQL = "SELECT * FROM Items WHERE quantityForSale > 0";
             var items = await connection.QueryAsync<MarketplaceItemViewModel>(selectAllMarketplaceItemsSQL);
 
             return items;
         }
 
-        public async Task<string> UpdateAsync(ItemAddModelString inputItem, int code)
+        public async Task<string> UpdateAsync(Item item)
         {
-            var editItem = mapper.Map<Item>(inputItem);
-            editItem.Code = code;
-
-            var validationResult = validator.Validate(editItem);
-            if (!validationResult.IsValid) { return Constants.ValidationError; }
-
-            int result;
             using var connection = new SqlConnection(connectionString);
-            string updateItemSQL;
-            if (inputItem.Image != null)
-            {
-                var imagePublicIdSQL = "SELECT imagePublicId FROM dbo.Items WHERE code = @Code";
-                var publicId = await connection.QueryFirstAsync<string>(imagePublicIdSQL, new { Code = code });
 
-                var imageData = await imageRepository.UpdateImageAsync(inputItem.Image, publicId);
-
-                editItem.ImageURL = imageData[0];
-                editItem.ImagePublicId = imageData[1];
-
-                updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId WHERE code = @code";
-                result = await connection.ExecuteAsync(updateItemSQL, editItem);
-                return result > 0 ? Constants.Ok : Constants.DatabaseError;
-            }
-
-            updateItemSQL = "UPDATE dbo.Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description WHERE code = @code";
-            result = await connection.ExecuteAsync(updateItemSQL, editItem);
+            string updateItemSQL = "UPDATE Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId WHERE code = @code";
+            int result = await connection.ExecuteAsync(updateItemSQL, item);
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        private async Task<bool> CheckIfExistsItemWithSameCodeAsync(string? code)
+        public async Task<string[]> UpdateImage(ItemAddModelWithFormFile inputItem, int code)
         {
             using var connection = new SqlConnection(connectionString);
 
-            var item = await connection.QueryFirstOrDefaultAsync($"SELECT * FROM dbo.Items WHERE Code = {code}");
+            string imagePublicIdSQL = "SELECT imagePublicId FROM Items WHERE code = @Code";
 
-            return item != null;
+            string publicId = await connection.QueryFirstOrDefaultAsync<string>(imagePublicIdSQL, new { Code = code });
+
+            string[] imageData = await imageRepository.UpdateImageAsync(inputItem.Image, publicId);
+
+            return imageData;
         }
-
     }
 }
 

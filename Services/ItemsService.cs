@@ -4,6 +4,13 @@ using Data.Repositories.Interfaces;
 using Services.Interfaces;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Http;
+using AutoMapper;
+using Data.Repositories;
+using System.ComponentModel.DataAnnotations;
+using FluentValidation;
+using System.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using Dapper;
 
 namespace Services
 {
@@ -11,19 +18,27 @@ namespace Services
     {
         private readonly IItemRepository repository;
         private IMemoryCache memoryCache;
+        private IMapper mapper;
+        private readonly IValidator<Item> validator;
+        private readonly string connectionString;
+        private readonly IConfiguration configuration;
+
+        private readonly IImageRepository imageRepository;
 
         private string INVENTORY_ITEMS_CACHE_KEY = "InventoryItems";
         private string MARKETPLACE_ITEMS_CACHE_KEY = "MarketplaceItems";
         private string MARKETPLACE_ITEM_CACHE_KEY = "MarketplaceItem";
 
-        private HttpContextAccessor httpContextAccessor;
-
-        public ItemsService(IItemRepository repository, IMemoryCache memoryCache)
+        public ItemsService(IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration)
         {
             this.repository = repository;
             this.memoryCache = memoryCache;
+            this.mapper = mapper;
+            this.validator = validator;
+            this.imageRepository = imageRepository;
+            this.configuration = configuration;
 
-            this.httpContextAccessor = new HttpContextAccessor();
+            this.connectionString = this.configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
@@ -83,9 +98,38 @@ namespace Services
             return item;
         }
 
-        public async Task<string> AddAsync(ItemAddModelString inputItem)
+        public async Task<string> AddAsync(ItemAddModelWithFormFile inputItem)
         {
-            string result = await this.repository.AddAsync(inputItem);
+            ItemAddModel item = mapper.Map<ItemAddModel>(inputItem);
+
+            if (item == null || !item.Image.ContentType.Contains("image")) { return "Invalid item"; };
+
+            var validationResult = validator.Validate(mapper.Map<Item>(item));
+
+            if (!validationResult.IsValid) { return "Validation error"; }
+
+            bool checkIfExistsItemWithSameCode = await CheckIfExistsItemWithSameCodeAsync(inputItem.Code);
+            if (checkIfExistsItemWithSameCode) { return "Item with same code exists!"; }
+
+            using var connection = new SqlConnection(connectionString);
+
+            if (item.Image != null)
+            {
+                var imageData = await imageRepository.UploadImageAsync(item.Image);
+
+                if (string.IsNullOrEmpty(imageData[0]) || string.IsNullOrEmpty(imageData[1]))
+                { return "Image error"; }
+
+                item.ImageURL = imageData[0];
+                item.ImagePublicId = imageData[1];
+            }
+
+            //bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
+            //if (!categoryExist) { return "Category error"; }
+
+            Item itemToRepository = mapper.Map<Item>(item);
+
+            string result = await this.repository.AddAsync(itemToRepository);
 
             if (result != Constants.Ok)
             {
@@ -109,9 +153,19 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsync(ItemAddModelString inputItem, int code)
+        public async Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int code)
         {
-            string result = await this.repository.UpdateAsync(inputItem, code);
+            string result;
+
+            switch (inputItem.Image)
+            {
+                case null:
+                    result = await UpdateAsyncWithoutImage(inputItem, code); 
+                    break;
+                default:
+                    result = await UpdateAsyncWithImage(inputItem, code);
+                    break;
+            }
 
             if (result != Constants.Ok)
             {
@@ -120,6 +174,53 @@ namespace Services
 
             memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
             return result;
+        }
+
+        public async Task<string> UpdateAsyncWithImage(ItemAddModelWithFormFile inputItem, int code)
+        {
+            Item editItem = mapper.Map<Item>(inputItem);
+
+            string[] imageData = await this.repository.UpdateImage(inputItem, code);
+
+            editItem.ImageURL = imageData[0];
+            editItem.ImagePublicId = imageData[1];
+
+            string result = await this.repository.UpdateAsync(editItem);
+
+            if (result != Constants.Ok)
+            {
+                return result;
+            }
+
+            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            return result;
+        }
+
+        public async Task<string> UpdateAsyncWithoutImage(ItemAddModelWithFormFile inputItem, int code)
+        {
+            Item editItem = mapper.Map<Item>(inputItem);
+
+            editItem.ImageURL = "";
+            editItem.ImagePublicId = "";
+
+            string result = await this.repository.UpdateAsync(editItem);
+
+            if (result != Constants.Ok)
+            {
+                return result;
+            }
+
+            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            return result;
+        }
+
+        private async Task<bool> CheckIfExistsItemWithSameCodeAsync(string? code)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            var item = await connection.QueryFirstOrDefaultAsync($"SELECT * FROM Items WHERE Code = {code}");
+
+            return item != null;
         }
     }
 }

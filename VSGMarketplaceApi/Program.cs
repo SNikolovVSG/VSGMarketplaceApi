@@ -1,21 +1,25 @@
 ﻿using AutoMapper;
-using FluentMigrator.Runner;
-using FluentValidation;
-using NLog;
-using NLog.Web;
-using System.Reflection;
 using Data;
 using Data.Extensions;
 using Data.Models;
 using Data.Repositories;
 using Data.Repositories.Interfaces;
+using FluentMigrator.Runner;
+using FluentValidation;
+using System.Reflection;
 using Helpers.Middleware;
 using Helpers.Profiles;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using NLog;
+using NLog.Web;
 using Services;
 using Services.Interfaces;
 using Helpers.Validators;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
+//TODO: logic in service(repositories is only to add in db, zero check),
+//return exceptions,
+//rollback single transaction(invalid state of db)
+//if u order the last pieces of item and then delete the order, the item should go back for sale(isDeleted = 0)
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {
@@ -61,7 +65,7 @@ try
     });
 
     builder.Services.AddAuthorization
-        (options => { options.AddPolicy("AdminOnly", policy => policy.RequireClaim("groups", "f2123818-3d51-4fe4-990b-b072a80da143")); });
+        (options => { options.AddPolicy("AdminOnly", policy => policy.RequireClaim("groups", Constants.AdminGroup)); });
 
     builder.Services.AddCors(options =>
     {
