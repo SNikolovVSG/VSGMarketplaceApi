@@ -11,7 +11,10 @@ namespace Data.Repositories.Interfaces
         Task<IEnumerable<MarketplaceItemViewModel>> GetMarketplaceItemsAsync();
         Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code);
         Task<string> DeleteAsync(int code);
-        Task<string[]> UpdateImage(ItemAddModelWithFormFile inputItem, int code);
-        Task<Item> GetByCode(int code);
+        Task<string[]> UpdateImageAsync(ItemAddModelWithFormFile inputItem, int code);
+        Task<Item> GetByCodeAsync(int code);
+        Task<string> UpdateAsyncWithoutImageChangesAsync(Item item);
+        Task DeleteImageAsync(int code);
+
     }
 }

@@ -153,13 +153,13 @@ namespace Services
         {
             string result;
 
-            switch (inputItem.Image)
+            switch (inputItem.ImageChanges)
             {
-                case null:
-                    result = await UpdateAsyncWithoutImage(inputItem, code); 
+                case false:
+                    result = await UpdateAsyncWithoutImageChanges(inputItem, code);
                     break;
-                default:
-                    result = await UpdateAsyncWithImage(inputItem, code);
+                case true:
+                    result = await UpdateAsyncWithImageChanges(inputItem, code);
                     break;
             }
 
@@ -172,14 +172,23 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsyncWithImage(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string> UpdateAsyncWithImageChanges(ItemAddModelWithFormFile inputItem, int code)
         {
             Item editItem = mapper.Map<Item>(inputItem);
 
-            string[] imageData = await this.repository.UpdateImage(inputItem, code);
+            if (inputItem.Image != null)
+            {
+                string[] imageData = await this.repository.UpdateImageAsync(inputItem, code);
 
-            editItem.ImageURL = imageData[0];
-            editItem.ImagePublicId = imageData[1];
+                editItem.ImageURL = imageData[0];
+                editItem.ImagePublicId = imageData[1];
+            }
+            else
+            {
+                await this.repository.DeleteImageAsync(code);
+                editItem.ImageURL = null;
+                editItem.ImagePublicId = null;
+            }
 
             string result = await this.repository.UpdateAsync(editItem);
 
@@ -192,14 +201,11 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsyncWithoutImage(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string> UpdateAsyncWithoutImageChanges(ItemAddModelWithFormFile inputItem, int code)
         {
             Item editItem = mapper.Map<Item>(inputItem);
 
-            editItem.ImageURL = null;
-            editItem.ImagePublicId = null;
-
-            string result = await this.repository.UpdateAsync(editItem);
+            string result = await this.repository.UpdateAsyncWithoutImageChangesAsync(editItem);
 
             if (result != Constants.Ok)
             {

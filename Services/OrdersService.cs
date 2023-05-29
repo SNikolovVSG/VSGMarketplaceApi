@@ -36,7 +36,7 @@ namespace Services
             Item item;
             try
             {
-                item = await itemRepository.GetByCode(input.ItemCode);
+                item = await itemRepository.GetByCodeAsync(input.ItemCode);
             }
             catch (Exception)
             {

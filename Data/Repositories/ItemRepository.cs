@@ -38,7 +38,7 @@ namespace Data.Repositories
             return changesByDeletingItem > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<Item> GetByCode(int code)
+        public async Task<Item> GetByCodeAsync(int code)
         {
             using var connection = new SqlConnection(connectionString);
             Item item = await connection.QueryFirstOrDefaultAsync<Item>("SELECT * FROM Items WHERE code = @Code", new { Code = code });
@@ -88,7 +88,17 @@ namespace Data.Repositories
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string[]> UpdateImage(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string> UpdateAsyncWithoutImageChangesAsync(Item item)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            string updateItemSQL = "UPDATE Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description WHERE code = @code";
+            int result = await connection.ExecuteAsync(updateItemSQL, item);
+
+            return result > 0 ? Constants.Ok : Constants.DatabaseError;
+        }
+
+        public async Task<string[]> UpdateImageAsync(ItemAddModelWithFormFile inputItem, int code)
         {
             using var connection = new SqlConnection(connectionString);
 
@@ -99,6 +109,15 @@ namespace Data.Repositories
             string[] imageData = await imageRepository.UpdateImageAsync(inputItem.Image, publicId);
 
             return imageData;
+        }
+
+        public async Task DeleteImageAsync(int code)
+        {
+            using var connection = new SqlConnection(connectionString);
+            string imagePublicIdSQL = "SELECT imagePublicId FROM Items WHERE code = @Code";
+            string publicId = await connection.QueryFirstOrDefaultAsync<string>(imagePublicIdSQL, new { Code = code });
+
+            await imageRepository.DeleteImageAsync(publicId);
         }
     }
 }

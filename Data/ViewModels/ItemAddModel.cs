@@ -43,6 +43,7 @@ namespace Data.ViewModels
 
         public IFormFile? Image { get; set; }
 
-        //public string? ImageURL { get; set; }
+        public bool ImageChanges { get; set; }
+
     }
 }
