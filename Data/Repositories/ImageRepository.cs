@@ -48,5 +48,10 @@ namespace Data.Repositories
 
             return await UploadImageAsync(image);
         }
+
+        public async Task DeleteImageAsync(string publicId)
+        {
+            await cloudinary.DestroyAsync(new DeletionParams(publicId));
+        }
     }
 }

@@ -4,9 +4,7 @@ using Data.Repositories.Interfaces;
 using Services.Interfaces;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
 using FluentValidation;
-using CloudinaryDotNet.Actions;
 
 namespace Services
 {
@@ -40,13 +38,13 @@ namespace Services
             }
             catch (Exception)
             {
-                return "Wrong item Code";
+                throw new Exception("Wrong item Code");
             }
 
             bool checkForQuantity = item.QuantityForSale < input.Quantity;
             if (checkForQuantity)
             {
-                return "Not enough quantity";
+                throw new Exception("Not enough quantity");
             }
 
             var orderPrice = item.Price * input.Quantity;
@@ -65,13 +63,13 @@ namespace Services
 
             var validationResult = validator.Validate(order);
 
-            if (!validationResult.IsValid) { return Constants.ValidationError; }
+            if (!validationResult.IsValid) { throw new Exception(Constants.ValidationError); }
 
             string result = await repository.BuyAsync(order, item);
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
@@ -88,7 +86,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
@@ -108,12 +106,12 @@ namespace Services
             }
             catch (Exception)
             {
-                return "Wrong order";
+                throw new Exception("Wrong order");
             }
 
             if (order == null || order.OrderedBy != userEmail)
             {
-                return "Not your order!";
+                throw new Exception("Not your order!");
             }
 
             if (order.Status == Constants.Pending)
@@ -124,7 +122,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);

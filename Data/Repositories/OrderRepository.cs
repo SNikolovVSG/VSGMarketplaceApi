@@ -107,7 +107,7 @@ namespace Data.Repositories
             }
             catch (Exception)
             {
-                return null;
+                throw;
             }
         }
 
@@ -118,8 +118,8 @@ namespace Data.Repositories
             var selectItemByCode = "SELECT * FROM Items WHERE code = @Code";
             var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Code = order.ItemCode });
 
-            if (item == null) { return "Invalid item Code"; }
-
+            if (item == null) { throw new Exception("Invalid item Code"); }
+                
             item.QuantityForSale += order.Quantity;
 
             var updateItemQuantitySQL = "UPDATE Items SET QuantityForSale = @QuantityForSale WHERE Code = @Code";
