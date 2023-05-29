@@ -1,9 +1,7 @@
-﻿using AutoMapper;
-using Dapper;
+﻿using Dapper;
 using Data.ViewModels;
 using Data.Repositories.Interfaces;
 using Data.Models;
-using FluentValidation;
 using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
@@ -11,20 +9,13 @@ namespace Data.Repositories
 {
     public class ItemRepository : IItemRepository
     {
-        private readonly IConfiguration configuration;
-        private readonly IMapper mapper;
-        private readonly IValidator<Item> validator;
         private readonly string connectionString;
 
         private readonly IImageRepository imageRepository;
 
-        public ItemRepository(IConfiguration configuration, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository)
+        public ItemRepository(IConfiguration configuration, IImageRepository imageRepository)
         {
-            this.configuration = configuration;
-            this.mapper = mapper;
-            this.validator = validator;
-
-            this.connectionString = this.configuration.GetConnectionString("DefaultConnection");
+            this.connectionString = configuration.GetConnectionString("DefaultConnection");
 
             this.imageRepository = imageRepository;
         }

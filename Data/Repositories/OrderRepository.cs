@@ -1,42 +1,49 @@
 ﻿using Dapper;
-using FluentValidation;
 using System.Data.SqlClient;
 using Data.Models;
 using Data.Repositories.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Data.ViewModels;
-using CloudinaryDotNet.Actions;
+using System.Transactions;
 
 namespace Data.Repositories
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly IConfiguration configuration;
-        private readonly IValidator<Order> validator;
         private readonly string connectionString;
 
-        public OrderRepository(IConfiguration configuration, IValidator<Order> validator)
+        public OrderRepository(IConfiguration configuration)
         {
-            this.configuration = configuration;
-            this.validator = validator;
             this.connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task<string> BuyAsync(Order order, Item item)
         {
+            int changes = 0;
             var addOrderSQL =
                 "INSERT INTO Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
 
-            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = @ItemCode";
+            var updateItemQuantitySQL = "UPDATE Items quantityForSale = @Count WHERE code = @ItemCode";
+            //var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = @ItemCode";
 
             var updatedCount = item.QuantityForSale - order.Quantity;
 
             using var connection = new SqlConnection(connectionString);
-            var changesByAddingOrder = await connection.ExecuteAsync(addOrderSQL, order);
 
-            var changesByUpdatingItemQuantity = await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemCode = item.Code });
+            using (var transactionScope = new TransactionScope())
+            {
+                changes += await connection.ExecuteAsync(addOrderSQL, order);
 
-            if (changesByAddingOrder + changesByUpdatingItemQuantity > 0)
+                changes += await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemCode = item.Code });
+                if (changes > 0)
+                {
+                    transactionScope.Complete();
+                }
+
+                transactionScope.Dispose();
+            }
+
+            if (changes > 0)
             {
                 return Constants.Ok;
             }
@@ -56,7 +63,7 @@ namespace Data.Repositories
         {
             int changesByItemsQuantity = 0;
             using var connection = new SqlConnection(connectionString);
-            
+
             var deleteOrderSQL = "UPDATE ORDERS SET IsDeleted = 1 WHERE code = @Code";
 
             int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Code = code });

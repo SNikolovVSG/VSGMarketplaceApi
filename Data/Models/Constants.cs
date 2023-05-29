@@ -10,6 +10,14 @@
         public const string ValidationError = "Validation Error";
 
         public const string AdminGroup = "f2123818-3d51-4fe4-990b-b072a80da143";
+
+        public const string PENDING_ORDERS_CACHE_KEY = "PendingOrders";
+        public const string PENDING_ORDER_CACHE_KEY = "PendingOrder";
+        public const string MY_ORDERS_CACHE_KEY = "MyOrders";
+
+        public const string INVENTORY_ITEMS_CACHE_KEY = "InventoryItems";
+        public const string MARKETPLACE_ITEMS_CACHE_KEY = "MarketplaceItems";
+        public const string MARKETPLACE_ITEM_CACHE_KEY = "MarketplaceItem";
     }
 
     public enum ItemCategory

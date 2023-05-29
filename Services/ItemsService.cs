@@ -25,10 +25,6 @@ namespace Services
 
         private readonly IImageRepository imageRepository;
 
-        private string INVENTORY_ITEMS_CACHE_KEY = "InventoryItems";
-        private string MARKETPLACE_ITEMS_CACHE_KEY = "MarketplaceItems";
-        private string MARKETPLACE_ITEM_CACHE_KEY = "MarketplaceItem";
-
         public ItemsService(IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration)
         {
             this.repository = repository;
@@ -43,7 +39,7 @@ namespace Services
 
         public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
         {
-            if (memoryCache.TryGetValue(INVENTORY_ITEMS_CACHE_KEY, out IEnumerable<InventoryItemViewModel> items))
+            if (memoryCache.TryGetValue(Constants.INVENTORY_ITEMS_CACHE_KEY, out IEnumerable<InventoryItemViewModel> items))
             {
                 return items;
             }
@@ -55,14 +51,14 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(INVENTORY_ITEMS_CACHE_KEY, items, options);
+            memoryCache.Set(Constants.INVENTORY_ITEMS_CACHE_KEY, items, options);
 
             return items;
         }
 
         public async Task<IEnumerable<MarketplaceItemViewModel>> GetMarketplaceItemsAsync()
         {
-            if (memoryCache.TryGetValue(MARKETPLACE_ITEMS_CACHE_KEY, out IEnumerable<MarketplaceItemViewModel> items))
+            if (memoryCache.TryGetValue(Constants.MARKETPLACE_ITEMS_CACHE_KEY, out IEnumerable<MarketplaceItemViewModel> items))
             {
                 return items;
             }
@@ -74,14 +70,14 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(MARKETPLACE_ITEMS_CACHE_KEY, items, options);
+            memoryCache.Set(Constants.MARKETPLACE_ITEMS_CACHE_KEY, items, options);
 
             return items;
         }
 
         public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code)
         {
-            if (memoryCache.TryGetValue(MARKETPLACE_ITEM_CACHE_KEY + code.ToString(), out MarketplaceByIdItemViewModel item))
+            if (memoryCache.TryGetValue(Constants.MARKETPLACE_ITEM_CACHE_KEY + code.ToString(), out MarketplaceByIdItemViewModel item))
             {
                 return item;
             }
@@ -93,7 +89,7 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(MARKETPLACE_ITEM_CACHE_KEY + code, item, options);
+            memoryCache.Set(Constants.MARKETPLACE_ITEM_CACHE_KEY + code, item, options);
 
             return item;
         }
@@ -136,7 +132,7 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             return result;
         }
 
@@ -149,7 +145,7 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             return result;
         }
 
@@ -172,7 +168,7 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             return result;
         }
 
@@ -192,7 +188,7 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             return result;
         }
 
@@ -200,8 +196,8 @@ namespace Services
         {
             Item editItem = mapper.Map<Item>(inputItem);
 
-            editItem.ImageURL = "";
-            editItem.ImagePublicId = "";
+            editItem.ImageURL = null;
+            editItem.ImagePublicId = null;
 
             string result = await this.repository.UpdateAsync(editItem);
 
@@ -210,7 +206,7 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             return result;
         }
 

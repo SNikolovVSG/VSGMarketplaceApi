@@ -26,7 +26,7 @@ namespace Data.Migrations
                 .WithColumn("QuantityForSale").AsInt32().WithDefaultValue(0)
                 .WithColumn("Description").AsString().Nullable()
                 .WithColumn("ImageURL").AsString().Nullable()
-                .WithColumn("ImagePublicId").AsString().Unique().Nullable();
+                .WithColumn("ImagePublicId").AsString().Nullable().Unique().Nullable();
 
             Insert.IntoTable("Items")
                 .Row(new Item

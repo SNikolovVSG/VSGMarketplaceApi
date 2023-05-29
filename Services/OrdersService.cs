@@ -17,10 +17,6 @@ namespace Services
         private readonly IItemRepository itemRepository;
         private readonly IValidator<Order> validator;
 
-        private string PENDING_ORDERS_CACHE_KEY = "PendingOrders";
-        private string PENDING_ORDER_CACHE_KEY = "PendingOrder";
-        private string MY_ORDERS_CACHE_KEY = "MyOrders";
-
         private HttpContextAccessor httpContextAccessor;
 
         public OrdersService(IOrderRepository repository, IMemoryCache memoryCache, IItemRepository itemRepository, IValidator<Order> validator)
@@ -78,8 +74,9 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(PENDING_ORDERS_CACHE_KEY);
-            memoryCache.Remove(MY_ORDERS_CACHE_KEY + userEmail);
+            memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
+            memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
+            memoryCache.Remove(Constants.MARKETPLACE_ITEMS_CACHE_KEY);
 
             return result;
         }
@@ -94,8 +91,8 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(PENDING_ORDERS_CACHE_KEY);
-            memoryCache.Remove(MY_ORDERS_CACHE_KEY + userEmail);
+            memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
+            memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
 
             return result;
         }
@@ -130,15 +127,15 @@ namespace Services
                 return result;
             }
 
-            memoryCache.Remove(PENDING_ORDERS_CACHE_KEY);
-            memoryCache.Remove(MY_ORDERS_CACHE_KEY + userEmail);
+            memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
+            memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
 
             return result;
         }
 
         public async Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync()
         {
-            if (memoryCache.TryGetValue(PENDING_ORDERS_CACHE_KEY, out IEnumerable<PendingOrderViewModel> orders))
+            if (memoryCache.TryGetValue(Constants.PENDING_ORDERS_CACHE_KEY, out IEnumerable<PendingOrderViewModel> orders))
             {
                 return orders;
             }
@@ -150,14 +147,14 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(PENDING_ORDERS_CACHE_KEY, orders, options);
+            memoryCache.Set(Constants.PENDING_ORDERS_CACHE_KEY, orders, options);
 
             return orders;
         }
 
         public async Task<Order> GetByCodeAsync(int code)
         {
-            if (memoryCache.TryGetValue(PENDING_ORDER_CACHE_KEY + code.ToString(), out Order order))
+            if (memoryCache.TryGetValue(Constants.PENDING_ORDER_CACHE_KEY + code.ToString(), out Order order))
             {
                 return order;
             }
@@ -169,7 +166,7 @@ namespace Services
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(PENDING_ORDER_CACHE_KEY + code, order, options);
+            memoryCache.Set(Constants.PENDING_ORDER_CACHE_KEY + code, order, options);
 
             return order;
         }
@@ -177,7 +174,7 @@ namespace Services
         public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail()
         {
             var userEmail = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
-            if (memoryCache.TryGetValue(MY_ORDERS_CACHE_KEY + userEmail, out IEnumerable<MyOrdersViewModel> orders))
+            if (memoryCache.TryGetValue(Constants.MY_ORDERS_CACHE_KEY + userEmail, out IEnumerable<MyOrdersViewModel> orders))
             {
                 return orders;
             }
@@ -191,7 +188,7 @@ namespace Services
                     SlidingExpiration = TimeSpan.FromMinutes(2)
                 };
 
-                memoryCache.Set(MY_ORDERS_CACHE_KEY + userEmail, orders, options);
+                memoryCache.Set(Constants.MY_ORDERS_CACHE_KEY + userEmail, orders, options);
             }
 
             return orders;
