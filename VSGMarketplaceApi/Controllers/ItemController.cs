@@ -7,12 +7,11 @@ using Microsoft.AspNetCore.Authorization;
 namespace VSGMarketplaceApi.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
     [ApiController]
     public class ItemController : ControllerBase
     {
         private readonly IItemsService itemsService;
-        
+
         public ItemController(IItemsService itemsService)
         {
             this.itemsService = itemsService;
