@@ -126,7 +126,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
@@ -139,7 +139,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
@@ -162,7 +162,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
@@ -194,7 +194,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
@@ -212,7 +212,7 @@ namespace Services
 
             if (result != Constants.Ok)
             {
-                return result;
+                throw new Exception(result);
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);

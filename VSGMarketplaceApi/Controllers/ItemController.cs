@@ -24,6 +24,7 @@ namespace VSGMarketplaceApi.Controllers
         {
             string result = await this.itemsService.AddAsync(item);
 
+            //unnecessary
             if (result != Constants.Ok)
             {
                 return BadRequest(result);
@@ -36,8 +37,8 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/Inventory/Modify/{code}")]
         public async Task<IActionResult> Edit([FromRoute] int code, [FromForm] ItemAddModelWithFormFile item)
         {
-
             string result = await itemsService.UpdateAsync(item, code);
+
             if (result != Constants.Ok)
             {
                 return BadRequest(result);

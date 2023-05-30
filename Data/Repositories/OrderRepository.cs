@@ -17,37 +17,40 @@ namespace Data.Repositories
             this.connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
+        //working
         public async Task<string> BuyAsync(Order order, Item item)
         {
-            int changes = 0;
             var addOrderSQL =
                 "INSERT INTO Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
 
-            var updateItemQuantitySQL = "UPDATE Items quantityForSale = @Count WHERE code = @ItemCode";
+            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = 0";
             //var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = @ItemCode";
 
             var updatedCount = item.QuantityForSale - order.Quantity;
 
             using var connection = new SqlConnection(connectionString);
-
-            using (var transactionScope = new TransactionScope())
+            
+            using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                changes += await connection.ExecuteAsync(addOrderSQL, order);
+                int changes = await connection.ExecuteAsync(addOrderSQL, order);
 
-                changes += await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemCode = item.Code });
-                if (changes > 0)
+                if (changes == 0)
                 {
-                    transactionScope.Complete();
+                    throw new Exception(Constants.DatabaseError + " on Order add");
                 }
 
+                changes = 0;
+                changes += await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemCode = item.Code });
+                if (changes == 0)
+                {
+                    throw new Exception(Constants.DatabaseError + " on Item quantity update");
+                }
+
+                transactionScope.Complete();
                 transactionScope.Dispose();
             }
 
-            if (changes > 0)
-            {
-                return Constants.Ok;
-            }
-            return Constants.DatabaseError;
+            return Constants.Ok;
         }
 
         public async Task<string> CompleteAsync(int code)
@@ -119,7 +122,7 @@ namespace Data.Repositories
             var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Code = order.ItemCode });
 
             if (item == null) { throw new Exception("Invalid item Code"); }
-                
+
             item.QuantityForSale += order.Quantity;
 
             var updateItemQuantitySQL = "UPDATE Items SET QuantityForSale = @QuantityForSale WHERE Code = @Code";

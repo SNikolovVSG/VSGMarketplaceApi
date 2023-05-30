@@ -17,9 +17,9 @@ using Services.Interfaces;
 using Helpers.Validators;
 
 //TODO:
-//return exceptions,
+//return exceptions, ok?
 //rollback single transaction(invalid state of db) => transaction scope ?
-//image input will need one more bool for is the image modified or not
+//image input will need one more bool for is the image modified or not ok?
 
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
