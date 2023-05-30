@@ -23,8 +23,7 @@ namespace Data.Repositories
             var addOrderSQL =
                 "INSERT INTO Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
 
-            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = 0";
-            //var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = @ItemCode";
+            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = @ItemCode";
 
             var updatedCount = item.QuantityForSale - order.Quantity;
 

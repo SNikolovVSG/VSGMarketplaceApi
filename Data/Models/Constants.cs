@@ -1,4 +1,7 @@
-﻿namespace Data.Models
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace Data.Models
 {
     public class Constants
     {
@@ -18,6 +21,9 @@
         public const string INVENTORY_ITEMS_CACHE_KEY = "InventoryItems";
         public const string MARKETPLACE_ITEMS_CACHE_KEY = "MarketplaceItems";
         public const string MARKETPLACE_ITEM_CACHE_KEY = "MarketplaceItem";
+
+        public const string DatabaseName = "MarketPlaceSpartak";
+        public static readonly string[] LocationsArray = new string[] { "Home", "Veliko Tarnovo", "Plovdiv" };
     }
 
     public enum ItemCategory
@@ -30,4 +36,5 @@
         Desks,
         Headsets
     }
+
 }

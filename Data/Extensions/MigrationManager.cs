@@ -1,4 +1,5 @@
-﻿using FluentMigrator.Runner;
+﻿using Data.Models;
+using FluentMigrator.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -15,7 +16,7 @@ namespace Data.Extensions
 
                 try
                 {
-                    databaseService.CreateDatabase("MarketPlaceSpartak");
+                    databaseService.CreateDatabase(Constants.DatabaseName);
 
                     migrationService.ListMigrations();
                     migrationService.MigrateUp();

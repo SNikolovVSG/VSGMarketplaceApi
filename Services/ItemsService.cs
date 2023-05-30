@@ -152,10 +152,10 @@ namespace Services
 
             switch (inputItem.ImageChanges)
             {
-                case "false":
+                case false:
                     result = await UpdateAsyncWithoutImageChanges(inputItem, code);
                     break;
-                case "true":
+                case true:
                     result = await UpdateAsyncWithImageChanges(inputItem, code);
                     break;
             }
