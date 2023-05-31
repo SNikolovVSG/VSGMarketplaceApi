@@ -8,6 +8,7 @@ using FluentValidation;
 using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Dapper;
+using System.Transactions;
 
 namespace Services
 {
@@ -114,26 +115,32 @@ namespace Services
                 throw new Exception("Invalid location!");
             }
 
-            //transaction?
+            string result = "";
             using var connection = new SqlConnection(connectionString);
-            if (item.Image != null)
+            using (var transactionScope = new TransactionScope())
             {
-                var imageData = await imageRepository.UploadImageAsync(item.Image);
+                if (item.Image != null)
+                {
+                    var imageData = await imageRepository.UploadImageAsync(item.Image);
 
-                if (string.IsNullOrEmpty(imageData[0]) || string.IsNullOrEmpty(imageData[1]))
-                { throw new Exception("Image error"); }
+                    if (string.IsNullOrEmpty(imageData[0]) || string.IsNullOrEmpty(imageData[1]))
+                    { throw new Exception("Image error"); }
 
-                item.ImageURL = imageData[0];
-                item.ImagePublicId = imageData[1];
-            }
+                    item.ImageURL = imageData[0];
+                    item.ImagePublicId = imageData[1];
+                }
 
-            Item itemToRepository = mapper.Map<Item>(item);
+                Item itemToRepository = mapper.Map<Item>(item);
 
-            string result = await this.repository.AddAsync(itemToRepository);
+                result = await this.repository.AddAsync(itemToRepository);
 
-            if (result != Constants.Ok)
-            {
-                throw new Exception(result);
+                if (result != Constants.Ok)
+                {
+                    throw new Exception(result);
+                }
+
+                transactionScope.Complete();
+                transactionScope.Dispose();
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);

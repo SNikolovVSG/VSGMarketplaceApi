@@ -95,7 +95,7 @@ namespace Data.Repositories
 
             string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location WHERE code = @OldCode";
             int result = await connection.ExecuteAsync
-                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, OldCode = oldCode } );
+                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.Location,OldCode = oldCode } );
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
