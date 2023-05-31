@@ -30,18 +30,18 @@ namespace Data.Repositories
             return changesByAddingItem > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string> DeleteAsync(int code)
+        public async Task<string> DeleteAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
-            int changesByDeletingItem = await connection.ExecuteAsync("DELETE FROM Items WHERE code = @Code", new { Code = code });
+            int changesByDeletingItem = await connection.ExecuteAsync("DELETE FROM Items WHERE Id = @Id", new { Id = id });
 
             return changesByDeletingItem > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<Item> GetByCodeAsync(int code)
+        public async Task<Item> GetByIdAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
-            Item item = await connection.QueryFirstOrDefaultAsync<Item>("SELECT * FROM Items WHERE code = @Code", new { Code = code });
+            Item item = await connection.QueryFirstOrDefaultAsync<Item>("SELECT * FROM Items WHERE Id = @Id", new { Id = id });
 
             return item;
         }
@@ -56,12 +56,12 @@ namespace Data.Repositories
             return items;
         }
 
-        public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code)
+        public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectItemByCodeSQL = "SELECT * FROM Items WHERE code = @Code";
-            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>(selectItemByCodeSQL, new { Code = code });
+            var selectItemByCodeSQL = "SELECT * FROM Items WHERE id = @Id";
+            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>(selectItemByCodeSQL, new { Id = id });
 
             if (item == null || item.QuantityForSale <= 0) { return null; }
 
@@ -78,46 +78,46 @@ namespace Data.Repositories
             return items;
         }
 
-        public async Task<string> UpdateAsync(Item item, int oldCode)
+        public async Task<string> UpdateAsync(Item item, int id)
         {
             using var connection = new SqlConnection(connectionString);
 
-            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location, imageURL = @ImageURL, imagePublicId = @ImagePublicId WHERE code = @OldCode";
+            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location, imageURL = @ImageURL, imagePublicId = @ImagePublicId WHERE Id = @Id";
             int result = await connection.ExecuteAsync
-                (updateItemSQL, new { item.Code ,item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.ImageURL, item.ImagePublicId, item.Location ,OldCode = oldCode });
+                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.ImageURL, item.ImagePublicId, item.Location, Id = id });
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string> UpdateAsyncWithoutImageChangesAsync(Item item, int oldCode)
+        public async Task<string> UpdateAsyncWithoutImageChangesAsync(Item item, int id)
         {
             using var connection = new SqlConnection(connectionString);
 
-            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location WHERE code = @OldCode";
+            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location WHERE id = @Id";
             int result = await connection.ExecuteAsync
-                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.Location,OldCode = oldCode } );
+                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.Location, Id = id });
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string[]> UpdateImageAsync(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string[]> UpdateImageAsync(ItemAddModelWithFormFile inputItem, int id)
         {
             using var connection = new SqlConnection(connectionString);
 
-            string imagePublicIdSQL = "SELECT imagePublicId FROM Items WHERE code = @Code";
+            string imagePublicIdSQL = "SELECT imagePublicId FROM Items WHERE Id = @Id";
 
-            string publicId = await connection.QueryFirstOrDefaultAsync<string>(imagePublicIdSQL, new { Code = code });
+            string publicId = await connection.QueryFirstOrDefaultAsync<string>(imagePublicIdSQL, new { Id = id });
 
             string[] imageData = await imageRepository.UpdateImageAsync(inputItem.Image, publicId);
 
             return imageData;
         }
 
-        public async Task DeleteImageAsync(int code)
+        public async Task DeleteImageAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
-            string imagePublicIdSQL = "SELECT imagePublicId FROM Items WHERE code = @Code";
-            string publicId = await connection.QueryFirstOrDefaultAsync<string>(imagePublicIdSQL, new { Code = code });
+            string imagePublicIdSQL = "SELECT imagePublicId FROM Items WHERE Id = @Id";
+            string publicId = await connection.QueryFirstOrDefaultAsync<string>(imagePublicIdSQL, new { Id = id });
 
             await imageRepository.DeleteImageAsync(publicId);
         }

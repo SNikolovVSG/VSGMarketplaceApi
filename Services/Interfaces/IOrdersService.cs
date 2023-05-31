@@ -13,7 +13,7 @@ namespace Services.Interfaces
 
         public Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync();
 
-        public Task<Order> GetByCodeAsync(int code);
+        public Task<Order> GetByIdAsync(int code);
 
         public Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail();
 

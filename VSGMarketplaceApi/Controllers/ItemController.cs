@@ -17,6 +17,7 @@ namespace VSGMarketplaceApi.Controllers
             this.itemsService = itemsService;
         }
 
+        //ok
         [Authorize(Policy = "AdminOnly")]
         [HttpPost("~/Inventory/AddItem")]
         public async Task<IActionResult> AddAsync([FromForm] ItemAddModelWithFormFile item)
@@ -32,11 +33,12 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
+        //ok
         [Authorize(Policy = "AdminOnly")]
-        [HttpPut("~/Inventory/Modify/{code}")]
-        public async Task<IActionResult> Update([FromRoute] int code, [FromForm] ItemAddModelWithFormFile item)
+        [HttpPut("~/Inventory/Modify/{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromForm] ItemAddModelWithFormFile item)
         {
-            string result = await itemsService.UpdateAsync(item, code);
+            string result = await itemsService.UpdateAsync(item, id);
 
             if (result != Constants.Ok)
             {
@@ -46,11 +48,12 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
+        //ok
         [Authorize(Policy = "AdminOnly")]
-        [HttpDelete("~/DeleteItem/{code}")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] int code)
+        [HttpDelete("~/DeleteItem/{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            string result = await this.itemsService.DeleteAsync(code);
+            string result = await this.itemsService.DeleteAsync(id);
             if (result != Constants.Ok)
             {
                 return BadRequest(result);
@@ -59,6 +62,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
+        //ok
         [Authorize(Policy = "AdminOnly")]
         [HttpGet("~/Inventory")]
         public async Task<ActionResult<List<InventoryItemViewModel>>> Inventory()
@@ -67,6 +71,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(items);
         }
 
+        //ok
         [HttpGet("~/Marketplace")]
         public async Task<ActionResult<List<MarketplaceItemViewModel>>> MarketplaceAsync()
         {
@@ -74,10 +79,11 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(items);
         }
 
-        [HttpGet("~/Marketplace/{code}")]
-        public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int code)
+        //ok
+        [HttpGet("~/Marketplace/{id}")]
+        public async Task<ActionResult<MarketplaceByIdItemViewModel>> ById([FromRoute] int id)
         {
-            var item = await this.itemsService.GetMarketplaceItemAsync(code);
+            var item = await this.itemsService.GetMarketplaceItemAsync(id);
             return Ok(item);
         }
     }

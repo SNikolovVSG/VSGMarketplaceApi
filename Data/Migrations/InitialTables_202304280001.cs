@@ -18,7 +18,8 @@ namespace Data.Migrations
                 .WithColumn("Logger").AsString();
 
             Create.Table("Items")
-                .WithColumn("Code").AsInt32().NotNullable().PrimaryKey()
+                .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
+                .WithColumn("Code").AsInt32().NotNullable()
                 .WithColumn("Name").AsString(150).NotNullable()
                 .WithColumn("Price").AsDecimal().WithDefaultValue(0)
                 .WithColumn("Category").AsString(150).NotNullable()
@@ -27,10 +28,14 @@ namespace Data.Migrations
                 .WithColumn("Description").AsString().Nullable()
                 .WithColumn("Location").AsString().NotNullable()
                 .WithColumn("ImageURL").AsString().Nullable()
-                .WithColumn("ImagePublicId").AsString().Nullable().Unique().Nullable();
+                .WithColumn("ImagePublicId").AsString().Nullable();
+
+            Create.UniqueConstraint("ItemsCodeAndLocation").OnTable("Items").Columns("Code", "Location");
+
+            Create.Index("ItemsImagePublicIdNullsCheck").OnTable("Items").OnColumn("ImagePublicId").Ascending().NullsNotDistinct();
 
             Insert.IntoTable("Items")
-                .Row(new Item
+                .Row(new 
                 {
                     Code = 323,
                     Name = "Name",
@@ -39,13 +44,13 @@ namespace Data.Migrations
                     Quantity = 35,
                     QuantityForSale = 12,
                     Description = "Description",
+                    Location = "Veliko Tarnovo",
                     ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1683809132/69642aa9-d6fb-421f-96b4-6873a06ee26b.jpg",
                     ImagePublicId = "69642aa9-d6fb-421f-96b4-6873a06ee26b",
-                    Location = "Veliko Tarnovo"
                 });
 
             Insert.IntoTable("Items")
-                .Row(new Item
+                .Row(new 
                 {
                     Code = 328,
                     Name = "NameV2",
@@ -60,8 +65,10 @@ namespace Data.Migrations
                 });
 
             Create.Table("Orders")
-                .WithColumn("Code").AsInt32().NotNullable().PrimaryKey().Identity(1,1)
-                .WithColumn("ItemCode").AsInt32().NotNullable().ForeignKey("Items", "Code").OnUpdate(System.Data.Rule.Cascade)
+                .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
+                .WithColumn("ItemId").AsInt32().NotNullable().ForeignKey("Items", "Id").OnUpdate(System.Data.Rule.Cascade)
+                .WithColumn("ItemCode").AsInt32().NotNullable()
+                .WithColumn("Location").AsString().NotNullable()
                 .WithColumn("Name").AsString(150).NotNullable()
                 .WithColumn("Quantity").AsInt32().NotNullable().WithDefaultValue(0)
                 .WithColumn("OrderPrice").AsDecimal().NotNullable().WithDefaultValue(0)
@@ -69,11 +76,12 @@ namespace Data.Migrations
                 .WithColumn("OrderDate").AsDateTime2().NotNullable()
                 .WithColumn("Status").AsString().WithDefaultValue(Constants.Pending)
                 .WithColumn("IsDeleted").AsBoolean().WithDefaultValue(false);
-
         }
 
         public override void Down()
         {
+            Delete.ForeignKey("OrderItemCodeAndLocation");
+
             Delete.Table("Logs");
             Delete.Table("Orders");
             Delete.Table("Items");

@@ -2,6 +2,8 @@
 {
     public class MarketplaceItemViewModel
     {
+        public int Id { get; set; }
+
         public int Code { get; set; }
 
         public double Price { get; set; }

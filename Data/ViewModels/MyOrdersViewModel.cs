@@ -2,7 +2,9 @@
 {
     public class MyOrdersViewModel
     {
-        public int Code { get; set; }
+        public int Id { get; set; }
+
+        public int ItemCode { get; set; }
 
         public string Name { get; set; }
 

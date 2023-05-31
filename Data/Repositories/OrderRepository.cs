@@ -17,18 +17,17 @@ namespace Data.Repositories
             this.connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        //working
         public async Task<string> BuyAsync(Order order, Item item)
         {
             var addOrderSQL =
-                "INSERT INTO Orders (ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemCode, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
+                "INSERT INTO Orders (ItemId, ItemCode, Location, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemId, @ItemCode, @Location, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
 
-            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE code = @ItemCode";
+            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE Id = @ItemId";
 
             var updatedCount = item.QuantityForSale - order.Quantity;
 
             using var connection = new SqlConnection(connectionString);
-            
+
             using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 int changes = await connection.ExecuteAsync(addOrderSQL, order);
@@ -39,7 +38,7 @@ namespace Data.Repositories
                 }
 
                 changes = 0;
-                changes += await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemCode = item.Code });
+                changes += await connection.ExecuteAsync(updateItemQuantitySQL, new { Count = updatedCount, ItemId = order.ItemId });
                 if (changes == 0)
                 {
                     throw new Exception(Constants.DatabaseError + " on Item quantity update");
@@ -52,23 +51,23 @@ namespace Data.Repositories
             return Constants.Ok;
         }
 
-        public async Task<string> CompleteAsync(int code)
+        public async Task<string> CompleteAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
 
-            var completeOrderSQL = "UPDATE Orders SET status = @Status where code = @Code and IsDeleted = 0";
-            var changesByCompleting = await connection.ExecuteAsync(completeOrderSQL, new { Status = Constants.Finished, Code = code });
+            var completeOrderSQL = "UPDATE Orders SET status = @Status where Id = @Id and IsDeleted = 0";
+            var changesByCompleting = await connection.ExecuteAsync(completeOrderSQL, new { Status = Constants.Finished, Id = id });
             return changesByCompleting > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string> DeleteAsync(int code)
+        public async Task<string> DeleteAsync(int id)
         {
             int changesByItemsQuantity = 0;
             using var connection = new SqlConnection(connectionString);
 
-            var deleteOrderSQL = "UPDATE ORDERS SET IsDeleted = 1 WHERE code = @Code";
+            var deleteOrderSQL = "UPDATE ORDERS SET IsDeleted = 1 WHERE Id = @Id";
 
-            int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Code = code });
+            int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Id = id });
 
             return changesByOrderDelete + changesByItemsQuantity > 0 ? Constants.Ok : Constants.DatabaseError;
         }
@@ -82,19 +81,14 @@ namespace Data.Repositories
             return orders;
         }
 
-        public async Task<Order> GetByCodeAsync(int code)
+        public async Task<Order> GetByIdAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
-            try
-            {
-                var getOrderByCode = "SELECT * FROM Orders WHERE code = @Code AND IsDeleted = 0";
-                var order = await connection.QueryFirstAsync<Order>(getOrderByCode, new { Code = code });
-                return order;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+
+            var getOrderById = "SELECT * FROM Orders WHERE Id = @Id AND IsDeleted = 0";
+            var order = await connection.QueryFirstOrDefaultAsync<Order>(getOrderById, new { Id = id });
+         
+            return order;
         }
 
         public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail)
@@ -104,7 +98,7 @@ namespace Data.Repositories
             try
             {
                 var orders = await connection.QueryAsync<MyOrdersViewModel>
-                    ("SELECT Code, ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM Orders  WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
+                    ("SELECT Id, ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM Orders WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
                 return orders;
             }
             catch (Exception)
@@ -117,14 +111,14 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectItemByCode = "SELECT * FROM Items WHERE code = @Code";
-            var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Code = order.ItemCode });
+            var selectItemByCode = "SELECT * FROM Items WHERE Id = @Id";
+            var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Id = order.Id });
 
             if (item == null) { throw new Exception("Invalid item Code"); }
 
             item.QuantityForSale += order.Quantity;
 
-            var updateItemQuantitySQL = "UPDATE Items SET QuantityForSale = @QuantityForSale WHERE Code = @Code";
+            var updateItemQuantitySQL = "UPDATE Items SET QuantityForSale = @QuantityForSale WHERE Id = @Id";
             int changesByItemsQuantity = await connection.ExecuteAsync(updateItemQuantitySQL, item);
 
             return Constants.Ok;

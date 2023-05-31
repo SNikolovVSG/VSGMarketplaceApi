@@ -73,21 +73,21 @@ namespace Services
             return items;
         }
 
-        public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int code)
+        public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int id)
         {
-            if (memoryCache.TryGetValue(Constants.MARKETPLACE_ITEM_CACHE_KEY + code.ToString(), out MarketplaceByIdItemViewModel item))
+            if (memoryCache.TryGetValue(Constants.MARKETPLACE_ITEM_CACHE_KEY + id.ToString(), out MarketplaceByIdItemViewModel item))
             {
                 return item;
             }
 
-            item = await repository.GetMarketplaceItemAsync(code);
+            item = await repository.GetMarketplaceItemAsync(id);
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(Constants.MARKETPLACE_ITEM_CACHE_KEY + code, item, options);
+            memoryCache.Set(Constants.MARKETPLACE_ITEM_CACHE_KEY + id, item, options);
 
             return item;
         }
@@ -102,8 +102,8 @@ namespace Services
             var validationResult = validator.Validate(mapper.Map<Item>(item));
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }
 
-            bool checkIfExistsItemWithSameCode = await CheckIfExistsItemWithSameCodeAsync(inputItem.Code);
-            if (checkIfExistsItemWithSameCode) { throw new Exception("Item with same code exists!"); }
+            bool checkIfExistsItemWithSameCode = await CheckIfItemWithSameCodeAndLocationExistsAsync(inputItem.Code, inputItem.Location);
+            if (checkIfExistsItemWithSameCode) { throw new Exception("Item with same code and location exists!"); }
 
             if (!Constants.ItemCategories.Contains(item.Category))
             {
@@ -117,7 +117,7 @@ namespace Services
 
             string result = "";
             using var connection = new SqlConnection(connectionString);
-            using (var transactionScope = new TransactionScope())
+            using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 if (item.Image != null)
                 {
@@ -148,9 +148,9 @@ namespace Services
             return result;
         }
 
-        public async Task<string> DeleteAsync(int code)
+        public async Task<string> DeleteAsync(int id)
         {
-            string result = await this.repository.DeleteAsync(code);
+            string result = await this.repository.DeleteAsync(id);
 
             if (result != Constants.Ok)
             {
@@ -162,17 +162,17 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int oldCode)
+        public async Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int id)
         {
             string result = "";
 
             switch (inputItem.ImageChanges)
             {
                 case false:
-                    result = await UpdateAsyncWithoutImageChanges(inputItem, oldCode);
+                    result = await UpdateAsyncWithoutImageChanges(inputItem, id);
                     break;
                 case true:
-                    result = await UpdateAsyncWithImageChanges(inputItem, oldCode);
+                    result = await UpdateAsyncWithImageChanges(inputItem, id);
                     break;
             }
 
@@ -186,7 +186,7 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsyncWithImageChanges(ItemAddModelWithFormFile inputItem, int oldCode)
+        public async Task<string> UpdateAsyncWithImageChanges(ItemAddModelWithFormFile inputItem, int id)
         {
             Item item = mapper.Map<Item>(inputItem);
 
@@ -195,19 +195,19 @@ namespace Services
 
             if (inputItem.Image != null)
             {
-                string[] imageData = await this.repository.UpdateImageAsync(inputItem, oldCode);
+                string[] imageData = await this.repository.UpdateImageAsync(inputItem, id);
 
                 item.ImageURL = imageData[0];
                 item.ImagePublicId = imageData[1];
             }
             else
             {
-                await this.repository.DeleteImageAsync(oldCode);
+                await this.repository.DeleteImageAsync(id);
                 item.ImageURL = null;
                 item.ImagePublicId = null;
             }
 
-            string result = await this.repository.UpdateAsync(item, oldCode);
+            string result = await this.repository.UpdateAsync(item, id);
 
             if (result != Constants.Ok)
             {
@@ -218,14 +218,14 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsyncWithoutImageChanges(ItemAddModelWithFormFile inputItem, int oldCode)
+        public async Task<string> UpdateAsyncWithoutImageChanges(ItemAddModelWithFormFile inputItem, int id)
         {
             Item item = mapper.Map<Item>(inputItem);
 
             var validationResult = validator.Validate(mapper.Map<Item>(item));
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }
 
-            string result = await this.repository.UpdateAsyncWithoutImageChangesAsync(item, oldCode);
+            string result = await this.repository.UpdateAsyncWithoutImageChangesAsync(item, id);
 
             if (result != Constants.Ok)
             {
@@ -236,11 +236,12 @@ namespace Services
             return result;
         }
 
-        private async Task<bool> CheckIfExistsItemWithSameCodeAsync(string? code)
+        private async Task<bool> CheckIfItemWithSameCodeAndLocationExistsAsync(string? code, string location)
         {
             using var connection = new SqlConnection(connectionString);
 
-            var item = await connection.QueryFirstOrDefaultAsync($"SELECT * FROM Items WHERE Code = {code}");
+            var item = await connection.QueryFirstOrDefaultAsync
+                ($"SELECT * FROM Items WHERE Code = @Code and Location = @Location", new { Code = code, Location = location });
 
             return item != null;
         }

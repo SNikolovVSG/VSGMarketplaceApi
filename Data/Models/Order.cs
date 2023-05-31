@@ -2,9 +2,13 @@
 {
     public class Order
     {
-        public int Code { get; set; }
+        public int Id { get; set; }
 
         public int ItemCode { get; set; }
+
+        public string Location { get; set; }
+
+        public int ItemId { get; set; }
 
         public string Name { get; set; }
 

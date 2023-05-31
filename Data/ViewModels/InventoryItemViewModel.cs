@@ -2,6 +2,8 @@
 {
     public class InventoryItemViewModel
     {
+        public int Id { get; set; }
+
         public int Code { get; set; }
 
         public int Price { get; set; }

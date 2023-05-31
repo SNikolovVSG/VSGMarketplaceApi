@@ -18,6 +18,7 @@ namespace VSGMarketplaceApi.Controllers
             this.ordersService = ordersService; 
         }
 
+        //ok
         [HttpPost("~/Marketplace/Buy")]
         public async Task<IActionResult> Buy([FromBody] NewOrderAddModel input)
         {
@@ -30,6 +31,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
+        //ok
         [HttpGet("~/MyOrders")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders()
         {
@@ -37,17 +39,11 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("~/PendingOrder/{code}")]
-        public async Task<ActionResult<Order>> ById([FromRoute] int code)
+        //ok
+        [HttpPut("~/MyOrders/DeleteOrder/{id}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var result = await this.ordersService.GetByCodeAsync(code);
-            return Ok(result);
-        }
-
-        [HttpPut("~/MyOrders/DeleteOrder/{code}")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] int code)
-        {
-            string result = await this.ordersService.DeleteAsync(code);
+            string result = await this.ordersService.DeleteAsync(id);
 
             if (result != Constants.Ok)
             {
@@ -56,6 +52,7 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
+        //ok
         [Authorize(Policy = "AdminOnly")]
         [HttpGet("~/PendingOrders")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
@@ -64,11 +61,12 @@ namespace VSGMarketplaceApi.Controllers
             return Ok(orders);
         }
 
+        //ok
         [Authorize(Policy = "AdminOnly")]
-        [HttpPut("~/PendingOrders/Complete/{code}")]
-        public async Task<IActionResult> Complete([FromRoute] int code)
+        [HttpPut("~/PendingOrders/Complete/{id}")]
+        public async Task<IActionResult> Complete([FromRoute] int id)
         {
-            string result = await this.ordersService.CompleteAsync(code);
+            string result = await this.ordersService.CompleteAsync(id);
 
             if (result != Constants.Ok)
             {

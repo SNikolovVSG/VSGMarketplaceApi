@@ -34,11 +34,16 @@ namespace Services
             Item item;
             try
             {
-                item = await itemRepository.GetByCodeAsync(input.ItemCode);
+                item = await itemRepository.GetByIdAsync(input.ItemId);
             }
             catch (Exception)
             {
-                throw new Exception("Wrong item Code");
+                throw new Exception("Wrong item Id");
+            }
+
+            if (item == null)
+            {
+                throw new Exception("Wrong item Id");
             }
 
             bool checkForQuantity = item.QuantityForSale < input.Quantity;
@@ -51,13 +56,15 @@ namespace Services
 
             var order = new Order
             {
-                ItemCode = input.ItemCode,
+                ItemId = input.ItemId,
+                ItemCode = item.Code,
                 Name = item.Name,
                 Quantity = input.Quantity,
                 OrderPrice = orderPrice,
                 OrderedBy = userEmail,
                 OrderDate = DateTime.Now,
                 Status = Constants.Pending,
+                Location = item.Location,
                 IsDeleted = false,
             };
 
@@ -80,10 +87,10 @@ namespace Services
             return result;
         }
 
-        public async Task<string> CompleteAsync(int code)
+        public async Task<string> CompleteAsync(int id)
         {
             var userEmail = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
-            string result = await repository.CompleteAsync(code);
+            string result = await repository.CompleteAsync(id);
 
             if (result != Constants.Ok)
             {
@@ -96,14 +103,14 @@ namespace Services
             return result;
         }
 
-        public async Task<string> DeleteAsync(int code)
+        public async Task<string> DeleteAsync(int id)
         {
             var userEmail = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
 
             Order order;
             try
             {
-                order = await GetByCodeAsync(code);
+                order = await GetByIdAsync(id);
             }
             catch (Exception)
             {
@@ -119,7 +126,7 @@ namespace Services
             {
                 string revertResult = await this.repository.RevertChangesFromPendingOrder(order);
             }
-            string result = await repository.DeleteAsync(order.Code);
+            string result = await repository.DeleteAsync(order.Id);
 
             if (result != Constants.Ok)
             {
@@ -153,14 +160,14 @@ namespace Services
             return orders;
         }
 
-        public async Task<Order> GetByCodeAsync(int code)
+        public async Task<Order> GetByIdAsync(int code)
         {
             if (memoryCache.TryGetValue(Constants.PENDING_ORDER_CACHE_KEY + code.ToString(), out Order order))
             {
                 return order;
             }
 
-            order = await repository.GetByCodeAsync(code);
+            order = await repository.GetByIdAsync(code);
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),

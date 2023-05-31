@@ -2,7 +2,7 @@
 {
     public class NewOrderAddModel
     {
-        public int ItemCode { get; set; }
+        public int ItemId { get; set; }
 
         public int Quantity { get; set; }
     }

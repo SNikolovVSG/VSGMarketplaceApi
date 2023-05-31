@@ -16,7 +16,7 @@ using Services;
 using Services.Interfaces;
 using Helpers.Validators;
 
-//TODO:produkt s ednakuv code, razl location
+//TODO: test edge cases
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {
