@@ -74,6 +74,7 @@ namespace Services
 
             memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
             memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             memoryCache.Remove(Constants.MARKETPLACE_ITEMS_CACHE_KEY);
 
             return result;
@@ -127,6 +128,8 @@ namespace Services
 
             memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
             memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.MARKETPLACE_ITEMS_CACHE_KEY);
 
             return result;
         }

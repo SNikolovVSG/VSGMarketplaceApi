@@ -16,7 +16,7 @@ using Services;
 using Services.Interfaces;
 using Helpers.Validators;
 
-//TODO: location, update when change code
+//TODO:produkt s ednakuv code, razl location
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {
