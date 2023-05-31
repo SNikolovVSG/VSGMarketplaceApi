@@ -20,5 +20,7 @@
 
         public string? ImagePublicId { get; set; }
 
+        public string Location { get; set; }
+
     }
 }

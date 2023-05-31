@@ -14,6 +14,6 @@ namespace Services.Interfaces
 
         public Task<string> DeleteAsync(int code);
 
-        public Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int code);
+        public Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int oldCode);
     }
 }

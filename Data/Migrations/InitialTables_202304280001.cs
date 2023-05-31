@@ -25,6 +25,7 @@ namespace Data.Migrations
                 .WithColumn("Quantity").AsInt32().NotNullable()
                 .WithColumn("QuantityForSale").AsInt32().WithDefaultValue(0)
                 .WithColumn("Description").AsString().Nullable()
+                .WithColumn("Location").AsString().NotNullable()
                 .WithColumn("ImageURL").AsString().Nullable()
                 .WithColumn("ImagePublicId").AsString().Nullable().Unique().Nullable();
 
@@ -39,7 +40,8 @@ namespace Data.Migrations
                     QuantityForSale = 12,
                     Description = "Description",
                     ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1683809132/69642aa9-d6fb-421f-96b4-6873a06ee26b.jpg",
-                    ImagePublicId = "69642aa9-d6fb-421f-96b4-6873a06ee26b"
+                    ImagePublicId = "69642aa9-d6fb-421f-96b4-6873a06ee26b",
+                    Location = "Veliko Tarnovo"
                 });
 
             Insert.IntoTable("Items")
@@ -48,17 +50,18 @@ namespace Data.Migrations
                     Code = 328,
                     Name = "NameV2",
                     Price = 22323,
-                    Category = "Desks",
+                    Category = "Furniture",
                     Quantity = 27,
                     QuantityForSale = 17,
                     Description = "Second Description",
                     ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1683810267/e51e0a72-6f69-4f8d-a594-1ebf9ca19e76.jpg",
-                    ImagePublicId = "e51e0a72-6f69-4f8d-a594-1ebf9ca19e76"
+                    ImagePublicId = "e51e0a72-6f69-4f8d-a594-1ebf9ca19e76",
+                    Location = "Plovdiv"
                 });
 
             Create.Table("Orders")
                 .WithColumn("Code").AsInt32().NotNullable().PrimaryKey().Identity(1,1)
-                .WithColumn("ItemCode").AsInt32().NotNullable().ForeignKey("Items", "Code")
+                .WithColumn("ItemCode").AsInt32().NotNullable().ForeignKey("Items", "Code").OnUpdate(System.Data.Rule.Cascade)
                 .WithColumn("Name").AsString(150).NotNullable()
                 .WithColumn("Quantity").AsInt32().NotNullable().WithDefaultValue(0)
                 .WithColumn("OrderPrice").AsDecimal().NotNullable().WithDefaultValue(0)

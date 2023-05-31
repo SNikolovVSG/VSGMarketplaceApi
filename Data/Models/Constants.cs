@@ -19,19 +19,10 @@
         public const string MARKETPLACE_ITEMS_CACHE_KEY = "MarketplaceItems";
         public const string MARKETPLACE_ITEM_CACHE_KEY = "MarketplaceItem";
 
-        public const string DatabaseName = "MarketPlaceSpartak";
-        public static readonly string[] LocationsArray = new string[] { "Home", "Veliko Tarnovo", "Plovdiv" };
-    }
+        public const string DatabaseNamePublished = "MarketPlaceSpartak";
+        public const string DatabaseName = "VSGMarketplace";
 
-    public enum ItemCategory
-    {
-        Laptops,
-        Computers,
-        Desktops,
-        Keyboards,
-        Mouses,
-        Desks,
-        Headsets
+        public static readonly string[] ItemLocations = new string[] { "Home", "Veliko Tarnovo", "Plovdiv" };
+        public static readonly string[] ItemCategories = new string[] { "Laptops", "Peripherals", "Furniture", "Misc" };
     }
-
 }

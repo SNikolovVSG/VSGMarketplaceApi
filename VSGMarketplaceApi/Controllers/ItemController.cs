@@ -34,7 +34,7 @@ namespace VSGMarketplaceApi.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpPut("~/Inventory/Modify/{code}")]
-        public async Task<IActionResult> Edit([FromRoute] int code, [FromForm] ItemAddModelWithFormFile item)
+        public async Task<IActionResult> Update([FromRoute] int code, [FromForm] ItemAddModelWithFormFile item)
         {
             string result = await itemsService.UpdateAsync(item, code);
 

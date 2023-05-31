@@ -95,17 +95,27 @@ namespace Services
         {
             ItemAddModel item = mapper.Map<ItemAddModel>(inputItem);
 
-            if (item == null || !item.Image.ContentType.Contains("image")) { throw new Exception("Invalid item"); };
+            if (item == null) { throw new Exception("Invalid item"); }
+            else if (!item.Image.ContentType.Contains("image")) { throw new Exception("Invalid image!"); }
 
             var validationResult = validator.Validate(mapper.Map<Item>(item));
-
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }
 
             bool checkIfExistsItemWithSameCode = await CheckIfExistsItemWithSameCodeAsync(inputItem.Code);
             if (checkIfExistsItemWithSameCode) { throw new Exception("Item with same code exists!"); }
 
-            using var connection = new SqlConnection(connectionString);
+            if (!Constants.ItemCategories.Contains(item.Category))
+            {
+                throw new Exception("Invalid category!");
+            }
 
+            if (!Constants.ItemLocations.Contains(item.Location))
+            {
+                throw new Exception("Invalid location!");
+            }
+
+            //transaction?
+            using var connection = new SqlConnection(connectionString);
             if (item.Image != null)
             {
                 var imageData = await imageRepository.UploadImageAsync(item.Image);
@@ -116,9 +126,6 @@ namespace Services
                 item.ImageURL = imageData[0];
                 item.ImagePublicId = imageData[1];
             }
-
-            //bool categoryExist = Enum.IsDefined(typeof(ItemCategory), item.Category);
-            //if (!categoryExist) { return "Category error"; }
 
             Item itemToRepository = mapper.Map<Item>(item);
 
@@ -146,17 +153,17 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int oldCode)
         {
             string result = "";
 
             switch (inputItem.ImageChanges)
             {
                 case false:
-                    result = await UpdateAsyncWithoutImageChanges(inputItem, code);
+                    result = await UpdateAsyncWithoutImageChanges(inputItem, oldCode);
                     break;
                 case true:
-                    result = await UpdateAsyncWithImageChanges(inputItem, code);
+                    result = await UpdateAsyncWithImageChanges(inputItem, oldCode);
                     break;
             }
 
@@ -169,7 +176,7 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsyncWithImageChanges(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string> UpdateAsyncWithImageChanges(ItemAddModelWithFormFile inputItem, int oldCode)
         {
             Item item = mapper.Map<Item>(inputItem);
 
@@ -178,19 +185,19 @@ namespace Services
 
             if (inputItem.Image != null)
             {
-                string[] imageData = await this.repository.UpdateImageAsync(inputItem, code);
+                string[] imageData = await this.repository.UpdateImageAsync(inputItem, oldCode);
 
                 item.ImageURL = imageData[0];
                 item.ImagePublicId = imageData[1];
             }
             else
             {
-                await this.repository.DeleteImageAsync(code);
+                await this.repository.DeleteImageAsync(oldCode);
                 item.ImageURL = null;
                 item.ImagePublicId = null;
             }
 
-            string result = await this.repository.UpdateAsync(item);
+            string result = await this.repository.UpdateAsync(item, oldCode);
 
             if (result != Constants.Ok)
             {
@@ -201,14 +208,14 @@ namespace Services
             return result;
         }
 
-        public async Task<string> UpdateAsyncWithoutImageChanges(ItemAddModelWithFormFile inputItem, int code)
+        public async Task<string> UpdateAsyncWithoutImageChanges(ItemAddModelWithFormFile inputItem, int oldCode)
         {
             Item item = mapper.Map<Item>(inputItem);
 
             var validationResult = validator.Validate(mapper.Map<Item>(item));
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }
 
-            string result = await this.repository.UpdateAsyncWithoutImageChangesAsync(item);
+            string result = await this.repository.UpdateAsyncWithoutImageChangesAsync(item, oldCode);
 
             if (result != Constants.Ok)
             {

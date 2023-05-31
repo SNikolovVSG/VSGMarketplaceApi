@@ -23,7 +23,7 @@ namespace Data.Repositories
         public async Task<string> AddAsync(Item item)
         {
             using var connection = new SqlConnection(connectionString);
-            string addItemSQL = "INSERT INTO Items (code, name, price, category, quantity, quantityForSale, description, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @ImageURL, @ImagePublicId);";
+            string addItemSQL = "INSERT INTO Items (code, name, price, category, quantity, quantityForSale, description, location, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @Location, @ImageURL, @ImagePublicId);";
 
             int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
 
@@ -78,22 +78,24 @@ namespace Data.Repositories
             return items;
         }
 
-        public async Task<string> UpdateAsync(Item item)
+        public async Task<string> UpdateAsync(Item item, int oldCode)
         {
             using var connection = new SqlConnection(connectionString);
 
-            string updateItemSQL = "UPDATE Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, imageURL = @ImageURl, imagePublicId = @ImagePublicId WHERE code = @code";
-            int result = await connection.ExecuteAsync(updateItemSQL, item);
+            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location, imageURL = @ImageURL, imagePublicId = @ImagePublicId WHERE code = @OldCode";
+            int result = await connection.ExecuteAsync
+                (updateItemSQL, new { item.Code ,item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.ImageURL, item.ImagePublicId, item.Location ,OldCode = oldCode });
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<string> UpdateAsyncWithoutImageChangesAsync(Item item)
+        public async Task<string> UpdateAsyncWithoutImageChangesAsync(Item item, int oldCode)
         {
             using var connection = new SqlConnection(connectionString);
 
-            string updateItemSQL = "UPDATE Items SET name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description WHERE code = @code";
-            int result = await connection.ExecuteAsync(updateItemSQL, item);
+            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location WHERE code = @OldCode";
+            int result = await connection.ExecuteAsync
+                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, OldCode = oldCode } );
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }

@@ -1,6 +1,6 @@
 ﻿namespace Data.ViewModels
 {
-    public class ItemViewModel
+    public class ItemViewModel // to delete
     {
         public string Name { get; set; }
 

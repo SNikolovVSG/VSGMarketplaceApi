@@ -14,7 +14,7 @@ namespace VSGMarketplaceApi.Controllers
         [Route("/GetLocations")]
         public string[] GetLocations()
         {
-            return Constants.LocationsArray;
+            return Constants.ItemLocations;
         }
 
     }
