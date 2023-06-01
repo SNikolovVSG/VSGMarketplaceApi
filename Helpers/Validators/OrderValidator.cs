@@ -9,7 +9,7 @@ namespace Helpers.Validators
         {
             RuleFor(order => order.OrderedBy).NotEmpty();
             RuleFor(order => order.OrderPrice).GreaterThanOrEqualTo(0);
-            RuleFor(order => order.ItemCode).GreaterThan(0);
+            RuleFor(order => order.ItemCode);
             RuleFor(order => order.OrderDate).NotEmpty();
             RuleFor(order => order.Name).NotEmpty();
             RuleFor(order => order.Quantity).NotEmpty().GreaterThan(0);

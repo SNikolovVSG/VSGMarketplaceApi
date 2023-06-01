@@ -19,7 +19,7 @@ namespace Data.Migrations
 
             Create.Table("Items")
                 .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
-                .WithColumn("Code").AsInt32().NotNullable()
+                .WithColumn("Code").AsString().NotNullable()
                 .WithColumn("Name").AsString(150).NotNullable()
                 .WithColumn("Price").AsDecimal().WithDefaultValue(0)
                 .WithColumn("Category").AsString(150).NotNullable()

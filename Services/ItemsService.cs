@@ -22,8 +22,9 @@ namespace Services
         private readonly IConfiguration configuration;
 
         private readonly IImageRepository imageRepository;
+        private readonly IOrderRepository orderRepository;
 
-        public ItemsService(IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration)
+        public ItemsService(IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration, IOrderRepository orderRepository)
         {
             this.repository = repository;
             this.memoryCache = memoryCache;
@@ -31,6 +32,7 @@ namespace Services
             this.validator = validator;
             this.imageRepository = imageRepository;
             this.configuration = configuration;
+            this.orderRepository = orderRepository;
 
             this.connectionString = this.configuration.GetConnectionString("DefaultConnection");
         }
@@ -166,6 +168,9 @@ namespace Services
         {
             string result = "";
 
+            //check if there are orders with this item, and if their quantity > inputItem.quantity
+
+
             switch (inputItem.ImageChanges)
             {
                 case false:
@@ -244,6 +249,15 @@ namespace Services
                 ($"SELECT * FROM Items WHERE Code = @Code and Location = @Location", new { Code = code, Location = location });
 
             return item != null;
+        }
+
+        private async Task<int> GetOrderedItemsQuantityByItemId(int id)
+        {
+            using var connection = new SqlConnection(connectionString);
+            //var 
+
+
+            return 0;
         }
     }
 }

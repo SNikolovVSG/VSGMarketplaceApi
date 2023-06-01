@@ -322,7 +322,6 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMar
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.AssemblyInfoInputs.cache
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.AssemblyInfo.cs
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.csproj.CoreCompileInputs.cache
-D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.MvcApplicationPartsAssemblyInfo.cs
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.MvcApplicationPartsAssemblyInfo.cache
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\staticwebassets\msbuild.VSGMarketplaceApi.Microsoft.AspNetCore.StaticWebAssets.props
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\staticwebassets\msbuild.build.VSGMarketplaceApi.props

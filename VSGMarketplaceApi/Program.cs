@@ -16,6 +16,7 @@ using Services;
 using Services.Interfaces;
 using Helpers.Validators;
 
+//TODO: When edit order which have pending orders and you want to set quantity < pending orders quantity
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {

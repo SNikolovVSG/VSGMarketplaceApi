@@ -7,7 +7,7 @@ namespace Helpers.Validators
     {
         public ItemValidator()
         {
-            RuleFor(item => item.Code).NotEmpty().GreaterThanOrEqualTo(0);
+            RuleFor(item => item.Code).NotEmpty();
             RuleFor(item => item.Price).GreaterThanOrEqualTo(0);
             RuleFor(item => item.Name).NotEmpty();
             RuleFor(item => item.Quantity).NotEmpty().GreaterThanOrEqualTo(0);
