@@ -70,7 +70,7 @@ namespace Services
 
             var validationResult = validator.Validate(order);
 
-            if (!validationResult.IsValid) { throw new Exception(Constants.ValidationError); }
+            if (!validationResult.IsValid) { throw new Exception(Constants.ValidationError + " " + validationResult.ToString()); }
 
             string result = await repository.BuyAsync(order, item);
 

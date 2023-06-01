@@ -97,7 +97,7 @@ namespace Services
             ItemAddModel item = mapper.Map<ItemAddModel>(inputItem);
 
             if (item == null) { throw new Exception("Invalid item"); }
-            else if (!item.Image.ContentType.Contains("image")) { throw new Exception("Invalid image!"); }
+            else if (item.Image!= null && !item.Image.ContentType.Contains("image")) { throw new Exception("Invalid image!"); }
 
             var validationResult = validator.Validate(mapper.Map<Item>(item));
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }

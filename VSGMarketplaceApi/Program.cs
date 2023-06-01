@@ -16,7 +16,6 @@ using Services;
 using Services.Interfaces;
 using Helpers.Validators;
 
-//TODO: test edge cases
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {

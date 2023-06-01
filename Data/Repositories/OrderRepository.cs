@@ -53,11 +53,33 @@ namespace Data.Repositories
 
         public async Task<string> CompleteAsync(int id)
         {
-            using var connection = new SqlConnection(connectionString);
+            Order order = await GetByIdAsync(id);
+            string completeOrderSQL = "UPDATE Orders SET status = @Status where Id = @Id and IsDeleted = 0";
 
-            var completeOrderSQL = "UPDATE Orders SET status = @Status where Id = @Id and IsDeleted = 0";
-            var changesByCompleting = await connection.ExecuteAsync(completeOrderSQL, new { Status = Constants.Finished, Id = id });
-            return changesByCompleting > 0 ? Constants.Ok : Constants.DatabaseError;
+            string removeItemQuantitySQL = "UPDATE Items SET Quantity -= @Quantity where Id = @ItemId";
+
+            using var connection = new SqlConnection(connectionString);
+            using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                int changesByRemoveItemQuantity = await connection.ExecuteAsync(removeItemQuantitySQL, new { order.Quantity, order.ItemId });
+
+                if (changesByRemoveItemQuantity == 0)
+                {
+                    throw new Exception("Error when removing item quantity!");
+                }
+
+                int changesByCompleting = await connection.ExecuteAsync(completeOrderSQL, new { Status = Constants.Finished, Id = id });
+
+                if (changesByCompleting == 0)
+                {
+                    throw new Exception("Error when completing the order!");
+                }
+
+                transactionScope.Complete();
+                transactionScope.Dispose();
+            }
+
+            return Constants.Ok;
         }
 
         public async Task<string> DeleteAsync(int id)
@@ -87,7 +109,7 @@ namespace Data.Repositories
 
             var getOrderById = "SELECT * FROM Orders WHERE Id = @Id AND IsDeleted = 0";
             var order = await connection.QueryFirstOrDefaultAsync<Order>(getOrderById, new { Id = id });
-         
+
             return order;
         }
 
@@ -112,7 +134,7 @@ namespace Data.Repositories
             using var connection = new SqlConnection(connectionString);
 
             var selectItemByCode = "SELECT * FROM Items WHERE Id = @Id";
-            var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Id = order.Id });
+            var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Id = order.ItemId });
 
             if (item == null) { throw new Exception("Invalid item Code"); }
 
