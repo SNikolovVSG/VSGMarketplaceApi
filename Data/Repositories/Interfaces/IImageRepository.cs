@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 
 namespace Data.Repositories.Interfaces
 {
@@ -8,6 +9,6 @@ namespace Data.Repositories.Interfaces
 
         Task<string[]> UpdateImageAsync(IFormFile image, string imageURL);
 
-        Task DeleteImageAsync(string publicId);
+        Task<DeletionResult> DeleteImageAsync(string publicId);
     }
 }

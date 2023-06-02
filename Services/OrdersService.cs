@@ -126,6 +126,10 @@ namespace Services
             {
                 string revertResult = await this.repository.RevertChangesFromPendingOrder(order);
             }
+            else
+            {
+                throw new Exception("Can't delete finished order!");
+            }
             string result = await repository.DeleteAsync(order.Id);
 
             if (result != Constants.Ok)

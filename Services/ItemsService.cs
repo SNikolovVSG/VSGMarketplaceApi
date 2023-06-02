@@ -99,7 +99,7 @@ namespace Services
             ItemAddModel item = mapper.Map<ItemAddModel>(inputItem);
 
             if (item == null) { throw new Exception("Invalid item"); }
-            else if (item.Image!= null && !item.Image.ContentType.Contains("image")) { throw new Exception("Invalid image!"); }
+            else if (item.Image != null && !item.Image.ContentType.Contains("image")) { throw new Exception("Invalid image!"); }
 
             var validationResult = validator.Validate(mapper.Map<Item>(item));
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }
@@ -152,24 +152,54 @@ namespace Services
 
         public async Task<string> DeleteAsync(int id)
         {
-            string result = await this.repository.DeleteAsync(id);
-
-            if (result != Constants.Ok)
+            using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                throw new Exception(result);
+                string publicId = await GetImagePublicIdAsync(id);
+
+                string result = await this.repository.DeleteAsync(id);
+
+                if (result != Constants.Ok)
+                {
+                    throw new Exception(result);
+                }
+
+                var imageDeletionResult = await this.imageRepository.DeleteImageAsync(publicId);
+                
+                if (imageDeletionResult.Result.ToLower() != Constants.Ok.ToLower())
+                {
+                    throw new Exception(imageDeletionResult.Error.ToString());
+                }
+
+                transactionScope.Complete();
+                transactionScope.Dispose();
             }
 
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             memoryCache.Remove(Constants.MARKETPLACE_ITEMS_CACHE_KEY);
-            return result;
+            return Constants.Ok;
+        }
+
+        private async Task<string> GetImagePublicIdAsync(int id)
+        {
+            var item = await this.repository.GetByIdAsync(id);
+
+            return item.ImagePublicId;
         }
 
         public async Task<string> UpdateAsync(ItemAddModelWithFormFile inputItem, int id)
         {
             string result = "";
 
-            //check if there are orders with this item, and if their quantity > inputItem.quantity
+            if (int.Parse(inputItem.Quantity) < int.Parse(inputItem.QuantityForSale))
+            {
+                throw new Exception("Quantity for sale must be less than Quantity!");
+            }
 
+            var quantityOfOrdersWithThisItem = await this.repository.GetQuantityFromOrdersAsync(id);
+            if (quantityOfOrdersWithThisItem > int.Parse(inputItem.Quantity))
+            {
+                throw new Exception("There are pending orders for this item and the quantity of them is bigger than the input quantity!");
+            }
 
             switch (inputItem.ImageChanges)
             {

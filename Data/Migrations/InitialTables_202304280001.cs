@@ -66,8 +66,8 @@ namespace Data.Migrations
 
             Create.Table("Orders")
                 .WithColumn("Id").AsInt32().Unique().PrimaryKey().NotNullable().Identity()
-                .WithColumn("ItemId").AsInt32().NotNullable().ForeignKey("Items", "Id").OnUpdate(System.Data.Rule.Cascade)
-                .WithColumn("ItemCode").AsInt32().NotNullable()
+                .WithColumn("ItemId").AsInt32().NotNullable().ForeignKey("Items", "Id").OnDeleteOrUpdate(System.Data.Rule.Cascade)
+                .WithColumn("ItemCode").AsString().NotNullable()
                 .WithColumn("Location").AsString().NotNullable()
                 .WithColumn("Name").AsString(150).NotNullable()
                 .WithColumn("Quantity").AsInt32().NotNullable().WithDefaultValue(0)
@@ -80,10 +80,8 @@ namespace Data.Migrations
 
         public override void Down()
         {
-            Delete.ForeignKey("OrderItemCodeAndLocation");
-
-            Delete.Table("Logs");
             Delete.Table("Orders");
+            Delete.Table("Logs");
             Delete.Table("Items");
         }
     }

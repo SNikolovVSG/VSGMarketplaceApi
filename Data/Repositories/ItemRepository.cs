@@ -121,6 +121,21 @@ namespace Data.Repositories
 
             await imageRepository.DeleteImageAsync(publicId);
         }
+
+        public async Task<int> GetQuantityFromOrdersAsync(int itemId)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            string getQuantitySQL = "SELECT Quantity FROM Orders WHERE ItemId = @ItemId AND Status = @PendingStatus AND IsDeleted = 0";
+
+            var quantities = await connection.QueryAsync<int>(getQuantitySQL, new { itemId, PendingStatus = Constants.Pending });
+         
+            int quantity = 0;
+
+            foreach (var item in quantities) { quantity += item; }
+
+            return quantity;
+        }
     }
 }
 

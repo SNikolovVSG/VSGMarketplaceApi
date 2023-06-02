@@ -15,6 +15,7 @@ namespace Data.Repositories.Interfaces
         Task<string[]> UpdateImageAsync(ItemAddModelWithFormFile inputItem, int id);
         Task<Item> GetByIdAsync(int id);
         Task DeleteImageAsync(int id);
+        Task<int> GetQuantityFromOrdersAsync(int itemId);
 
     }
 }
