@@ -5,6 +5,7 @@ using Services.Interfaces;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Http;
 using FluentValidation;
+using AutoMapper;
 
 namespace Services
 {
@@ -14,13 +15,15 @@ namespace Services
         private IMemoryCache memoryCache;
         private readonly IItemRepository itemRepository;
         private readonly IValidator<Order> validator;
+        private IMapper mapper;
 
         private HttpContextAccessor httpContextAccessor;
 
-        public OrdersService(IOrderRepository repository, IMemoryCache memoryCache, IItemRepository itemRepository, IValidator<Order> validator)
+        public OrdersService(IOrderRepository repository, IMemoryCache memoryCache, IItemRepository itemRepository, IValidator<Order> validator, IMapper mapper)
         {
             this.repository = repository;
             this.memoryCache = memoryCache;
+            this.mapper = mapper;
 
             this.httpContextAccessor = new HttpContextAccessor();
             this.itemRepository = itemRepository;
@@ -152,16 +155,18 @@ namespace Services
                 return orders;
             }
 
-            orders = await repository.GetAllPendingOrdersAsync();
+            var repositoryOrders = await repository.GetAllPendingOrdersAsync();
+            List<PendingOrderViewModel> outputOrders = mapper.Map(repositoryOrders, new List<PendingOrderViewModel>());
+
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(Constants.PENDING_ORDERS_CACHE_KEY, orders, options);
+            memoryCache.Set(Constants.PENDING_ORDERS_CACHE_KEY, outputOrders, options);
 
-            return orders;
+            return outputOrders;
         }
 
         public async Task<Order> GetByIdAsync(int code)
@@ -191,7 +196,9 @@ namespace Services
                 return orders;
             }
 
-            orders = await repository.GetByUserEmail(userEmail);
+            var repositoryOrders = await repository.GetByUserEmail(userEmail);
+            List<MyOrdersViewModel> outputOrders = mapper.Map(repositoryOrders, new List<MyOrdersViewModel>());
+
             if (orders != null)
             {
                 var options = new MemoryCacheEntryOptions()
@@ -200,10 +207,10 @@ namespace Services
                     SlidingExpiration = TimeSpan.FromMinutes(2)
                 };
 
-                memoryCache.Set(Constants.MY_ORDERS_CACHE_KEY + userEmail, orders, options);
+                memoryCache.Set(Constants.MY_ORDERS_CACHE_KEY + userEmail, outputOrders, options);
             }
 
-            return orders;
+            return outputOrders;
         }
     }
 }

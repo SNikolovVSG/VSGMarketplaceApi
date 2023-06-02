@@ -16,6 +16,8 @@
 
         public int QuantityForSale { get; set; }
 
+        public int AvailableQuantity { get; set; }
+
         public string? Description { get; set; }
      
         public string Location { get; set; }

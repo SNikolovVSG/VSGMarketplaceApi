@@ -94,12 +94,12 @@ namespace Data.Repositories
             return changesByOrderDelete + changesByItemsQuantity > 0 ? Constants.Ok : Constants.DatabaseError;
         }
 
-        public async Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync()
+        public async Task<IEnumerable<Order>> GetAllPendingOrdersAsync()
         {
             using var connection = new SqlConnection(connectionString);
 
             var allPendingOrdersSQL = "SELECT * FROM Orders WHERE status = @Pending AND IsDeleted = 0";
-            var orders = await connection.QueryAsync<PendingOrderViewModel>(allPendingOrdersSQL, new { Constants.Pending });
+            var orders = await connection.QueryAsync<Order>(allPendingOrdersSQL, new { Constants.Pending });
             return orders;
         }
 
@@ -113,13 +113,13 @@ namespace Data.Repositories
             return order;
         }
 
-        public async Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail)
+        public async Task<IEnumerable<Order>> GetByUserEmail(string userEmail)
         {
             using var connection = new SqlConnection(connectionString);
 
             try
             {
-                var orders = await connection.QueryAsync<MyOrdersViewModel>
+                var orders = await connection.QueryAsync<Order>
                     ("SELECT Id, ItemCode, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status FROM Orders WHERE OrderedBy = @Email AND IsDeleted = 0", new { Email = userEmail });
                 return orders;
             }

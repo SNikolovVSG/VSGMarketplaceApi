@@ -9,8 +9,8 @@ namespace Data.Repositories.Interfaces
         Task<string> BuyAsync(Order order, Item item);
         Task<string> CompleteAsync(int id);
         Task<string> DeleteAsync(int id);  
-        Task<IEnumerable<MyOrdersViewModel>> GetByUserEmail(string userEmail);
-        Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync();
+        Task<IEnumerable<Order>> GetByUserEmail(string userEmail);
+        Task<IEnumerable<Order>> GetAllPendingOrdersAsync();
         Task<string> RevertChangesFromPendingOrder(Order order);
     }
 }

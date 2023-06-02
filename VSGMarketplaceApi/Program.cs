@@ -41,12 +41,15 @@ try
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
     builder.Services.AddScoped<IItemRepository, ItemRepository>();
     builder.Services.AddScoped<IImageRepository, ImageRepository>();
+    builder.Services.AddScoped<ILoanRepository, LoanRepository>();
 
     builder.Services.AddScoped<IValidator<Item>, ItemValidator>();
     builder.Services.AddScoped<IValidator<Order>, OrderValidator>();
+    builder.Services.AddScoped<IValidator<Loan>, LoanValidator>();
 
     builder.Services.AddScoped<IOrdersService, OrdersService>();
     builder.Services.AddScoped<IItemsService, ItemsService>();
+    builder.Services.AddScoped<ILoansService, LoansService>();
 
     builder.Services.AddAuthentication(options =>
     {

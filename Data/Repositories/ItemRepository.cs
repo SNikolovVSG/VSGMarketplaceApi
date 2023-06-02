@@ -46,34 +46,34 @@ namespace Data.Repositories
             return item;
         }
 
-        public async Task<IEnumerable<InventoryItemViewModel>> GetInventoryItemsAsync()
+        public async Task<IEnumerable<Item>> GetInventoryItemsAsync()
         {
             using var connection = new SqlConnection(connectionString);
 
             var selectAllItemsSQL = "SELECT * FROM Items";
-            var items = await connection.QueryAsync<InventoryItemViewModel>(selectAllItemsSQL);
+            var items = await connection.QueryAsync<Item>(selectAllItemsSQL);
 
             return items;
         }
 
-        public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int id)
+        public async Task<Item> GetMarketplaceItemAsync(int id)
         {
             using var connection = new SqlConnection(connectionString);
 
             var selectItemByCodeSQL = "SELECT * FROM Items WHERE id = @Id";
-            var item = await connection.QueryFirstAsync<MarketplaceByIdItemViewModel>(selectItemByCodeSQL, new { Id = id });
+            var item = await connection.QueryFirstOrDefaultAsync<Item>(selectItemByCodeSQL, new { Id = id });
 
             if (item == null || item.QuantityForSale <= 0) { return null; }
 
             return item;
         }
 
-        public async Task<IEnumerable<MarketplaceItemViewModel>> GetMarketplaceItemsAsync()
+        public async Task<IEnumerable<Item>> GetMarketplaceItemsAsync()
         {
             using var connection = new SqlConnection(connectionString);
 
             var selectAllMarketplaceItemsSQL = "SELECT * FROM Items WHERE quantityForSale > 0";
-            var items = await connection.QueryAsync<MarketplaceItemViewModel>(selectAllMarketplaceItemsSQL);
+            var items = await connection.QueryAsync<Item>(selectAllMarketplaceItemsSQL);
 
             return items;
         }
@@ -135,6 +135,14 @@ namespace Data.Repositories
             foreach (var item in quantities) { quantity += item; }
 
             return quantity;
+        }
+
+        public async Task<int> ReduceAvailableQuantity(Loan loan)
+        {
+            using var connection = new SqlConnection(connectionString);
+            string reduceAvailabeQuantitySQL = "UPDATE Items SET AvailableQuantity -= @Quantity, Quantity -= @Quantity WHERE Id = @ItemId";
+
+            return await connection.ExecuteAsync(reduceAvailabeQuantitySQL, loan);
         }
     }
 }

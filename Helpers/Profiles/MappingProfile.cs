@@ -12,9 +12,9 @@ namespace Helpers.Profiles
             CreateMap<ItemAddModelWithFormFile, Item>();
             CreateMap<ItemAddModelWithFormFile, ItemAddModel>();
 
-            CreateMap<Item, ItemViewModel>();
             CreateMap<Item, InventoryItemViewModel>();
             CreateMap<Item, MarketplaceItemViewModel>();
+            CreateMap<Item, MarketplaceByIdItemViewModel>();
 
             CreateMap<Order, MyOrdersViewModel>();
             CreateMap<Order, PendingOrderViewModel>();

@@ -12,6 +12,7 @@ namespace Helpers.Validators
             RuleFor(item => item.Name).NotEmpty();
             RuleFor(item => item.Quantity).NotEmpty().GreaterThanOrEqualTo(0);
             RuleFor(item => item.QuantityForSale).GreaterThanOrEqualTo(0);
+            RuleFor(item => item.AvailableQuantity).GreaterThanOrEqualTo(0);
             RuleFor(item => item.Category).NotEmpty();
             RuleFor(item => item.Location).NotEmpty();
         }

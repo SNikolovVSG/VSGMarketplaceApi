@@ -16,6 +16,8 @@ namespace Data.ViewModels
 
         public int QuantityForSale { get; set; }
 
+        public int AvailableQuantity { get; set; }
+
         public string Description { get; set; }
         
         public string Location { get; set; }
@@ -40,6 +42,8 @@ namespace Data.ViewModels
         public string? Quantity { get; set; }
 
         public string? QuantityForSale { get; set; }
+
+        public string? AvailableQuantity { get; set; }
 
         public string? Description { get; set; }
         

@@ -22,7 +22,6 @@ namespace Services
         private readonly IConfiguration configuration;
 
         private readonly IImageRepository imageRepository;
-        private readonly IOrderRepository orderRepository;
 
         public ItemsService(IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration, IOrderRepository orderRepository)
         {
@@ -32,7 +31,6 @@ namespace Services
             this.validator = validator;
             this.imageRepository = imageRepository;
             this.configuration = configuration;
-            this.orderRepository = orderRepository;
 
             this.connectionString = this.configuration.GetConnectionString("DefaultConnection");
         }
@@ -44,16 +42,18 @@ namespace Services
                 return items;
             }
 
-            items = await repository.GetInventoryItemsAsync();
+            IEnumerable<Item> repositoryItems = await repository.GetInventoryItemsAsync();
+            List<InventoryItemViewModel> outputItems = mapper.Map(repositoryItems, new List<InventoryItemViewModel>());
+
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(Constants.INVENTORY_ITEMS_CACHE_KEY, items, options);
+            memoryCache.Set(Constants.INVENTORY_ITEMS_CACHE_KEY, outputItems, options);
 
-            return items;
+            return outputItems;
         }
 
         public async Task<IEnumerable<MarketplaceItemViewModel>> GetMarketplaceItemsAsync()
@@ -63,16 +63,18 @@ namespace Services
                 return items;
             }
 
-            items = await repository.GetMarketplaceItemsAsync();
+            IEnumerable<Item> repositoryItems = await repository.GetMarketplaceItemsAsync();
+            List<MarketplaceItemViewModel> outputItems = mapper.Map(repositoryItems, new List<MarketplaceItemViewModel>());
+
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(Constants.MARKETPLACE_ITEMS_CACHE_KEY, items, options);
+            memoryCache.Set(Constants.MARKETPLACE_ITEMS_CACHE_KEY, outputItems, options);
 
-            return items;
+            return outputItems;
         }
 
         public async Task<MarketplaceByIdItemViewModel> GetMarketplaceItemAsync(int id)
@@ -82,16 +84,18 @@ namespace Services
                 return item;
             }
 
-            item = await repository.GetMarketplaceItemAsync(id);
+            Item repositoryItem = await repository.GetMarketplaceItemAsync(id);
+            MarketplaceByIdItemViewModel ouputItem = mapper.Map<MarketplaceByIdItemViewModel>(repositoryItem);
+
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             };
 
-            memoryCache.Set(Constants.MARKETPLACE_ITEM_CACHE_KEY + id, item, options);
+            memoryCache.Set(Constants.MARKETPLACE_ITEM_CACHE_KEY + id, ouputItem, options);
 
-            return item;
+            return ouputItem;
         }
 
         public async Task<string> AddAsync(ItemAddModelWithFormFile inputItem)
@@ -103,6 +107,12 @@ namespace Services
 
             var validationResult = validator.Validate(mapper.Map<Item>(item));
             if (!validationResult.IsValid) { throw new Exception("Validation error"); }
+
+            var maxAvailableQuantity = int.Parse(inputItem.Quantity) - int.Parse(inputItem.QuantityForSale);
+            if (int.Parse(inputItem.AvailableQuantity) > maxAvailableQuantity)
+            {
+                throw new Exception("Available quantity must be less than quantity minus quantity for sale!");
+            }
 
             bool checkIfExistsItemWithSameCode = await CheckIfItemWithSameCodeAndLocationExistsAsync(inputItem.Code, inputItem.Location);
             if (checkIfExistsItemWithSameCode) { throw new Exception("Item with same code and location exists!"); }
@@ -164,7 +174,7 @@ namespace Services
                 }
 
                 var imageDeletionResult = await this.imageRepository.DeleteImageAsync(publicId);
-                
+
                 if (imageDeletionResult.Result.ToLower() != Constants.Ok.ToLower())
                 {
                     throw new Exception(imageDeletionResult.Error.ToString());
@@ -279,15 +289,6 @@ namespace Services
                 ($"SELECT * FROM Items WHERE Code = @Code and Location = @Location", new { Code = code, Location = location });
 
             return item != null;
-        }
-
-        private async Task<int> GetOrderedItemsQuantityByItemId(int id)
-        {
-            using var connection = new SqlConnection(connectionString);
-            //var 
-
-
-            return 0;
         }
     }
 }
