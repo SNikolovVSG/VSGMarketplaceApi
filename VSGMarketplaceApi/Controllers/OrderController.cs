@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace VSGMarketplaceApi.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
     {

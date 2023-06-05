@@ -26,10 +26,10 @@ namespace VSGMarketplaceApi.Controllers
             return Ok();
         }
 
-        [HttpGet("~/MyLoans")]
-        public async Task<ActionResult<Loan[]>> MyLoans([FromBody] string userEmail)
+        [HttpGet("~/MyLoans/{email}/")]
+        public async Task<ActionResult<Loan[]>> MyLoans([FromRoute] string email)
         {
-            var loans = await this.loansService.GetMyLoansAsync(userEmail);
+            var loans = await this.loansService.GetMyLoansAsync(email);
 
             return Ok(loans);
         }

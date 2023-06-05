@@ -23,7 +23,6 @@ namespace Data.Extensions
                 }
                 catch
                 {
-                    //log errors or ...f
                     throw;
                 }
             }

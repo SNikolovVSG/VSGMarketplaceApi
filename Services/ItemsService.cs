@@ -14,16 +14,17 @@ namespace Services
 {
     public class ItemsService : IItemsService
     {
+        private readonly IConfiguration configuration;
         private readonly IItemRepository repository;
-        private IMemoryCache memoryCache;
-        private IMapper mapper;
         private readonly IValidator<Item> validator;
         private readonly string connectionString;
-        private readonly IConfiguration configuration;
+        private IMemoryCache memoryCache;
+        private IMapper mapper;
 
         private readonly IImageRepository imageRepository;
 
-        public ItemsService(IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration, IOrderRepository orderRepository)
+        public ItemsService
+            (IItemRepository repository, IMemoryCache memoryCache, IMapper mapper, IValidator<Item> validator, IImageRepository imageRepository, IConfiguration configuration)
         {
             this.repository = repository;
             this.memoryCache = memoryCache;

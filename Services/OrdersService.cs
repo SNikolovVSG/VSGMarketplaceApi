@@ -11,15 +11,16 @@ namespace Services
 {
     public class OrdersService : IOrdersService
     {
-        private readonly IOrderRepository repository;
-        private IMemoryCache memoryCache;
+        private HttpContextAccessor httpContextAccessor;
         private readonly IItemRepository itemRepository;
+        private readonly IOrderRepository repository;
         private readonly IValidator<Order> validator;
+        private IMemoryCache memoryCache;
         private IMapper mapper;
 
-        private HttpContextAccessor httpContextAccessor;
 
-        public OrdersService(IOrderRepository repository, IMemoryCache memoryCache, IItemRepository itemRepository, IValidator<Order> validator, IMapper mapper)
+        public OrdersService
+            (IOrderRepository repository, IMemoryCache memoryCache, IItemRepository itemRepository, IValidator<Order> validator, IMapper mapper)
         {
             this.repository = repository;
             this.memoryCache = memoryCache;
@@ -30,27 +31,17 @@ namespace Services
             this.validator = validator;
         }
 
-        public async Task<string> BuyAsync(NewOrderAddModel input)
+        public async Task BuyAsync(NewOrderAddModel input)
         {
             var userEmail = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
 
-            Item item;
-            try
-            {
-                item = await itemRepository.GetByIdAsync(input.ItemId);
-            }
-            catch (Exception)
-            {
-                throw new Exception("Wrong item Id");
-            }
+            Item item = await itemRepository.GetByIdAsync(input.ItemId);
 
             if (item == null)
             {
                 throw new Exception("Wrong item Id");
             }
-
-            bool checkForQuantity = item.QuantityForSale < input.Quantity;
-            if (checkForQuantity)
+            else if (item.QuantityForSale < input.Quantity)
             {
                 throw new Exception("Not enough quantity");
             }
@@ -86,11 +77,9 @@ namespace Services
             memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             memoryCache.Remove(Constants.MARKETPLACE_ITEMS_CACHE_KEY);
-
-            return result;
         }
 
-        public async Task<string> CompleteAsync(int id)
+        public async Task CompleteAsync(int id)
         {
             var userEmail = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
             string result = await repository.CompleteAsync(id);
@@ -102,11 +91,9 @@ namespace Services
 
             memoryCache.Remove(Constants.PENDING_ORDERS_CACHE_KEY);
             memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
-
-            return result;
         }
 
-        public async Task<string> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var userEmail = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
 
@@ -144,8 +131,6 @@ namespace Services
             memoryCache.Remove(Constants.MY_ORDERS_CACHE_KEY + userEmail);
             memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
             memoryCache.Remove(Constants.MARKETPLACE_ITEMS_CACHE_KEY);
-
-            return result;
         }
 
         public async Task<IEnumerable<PendingOrderViewModel>> GetAllPendingOrdersAsync()

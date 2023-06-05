@@ -16,6 +16,7 @@ using Services;
 using Services.Interfaces;
 using Helpers.Validators;
 
+//TODO: Test loan cache 
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {
@@ -37,7 +38,6 @@ try
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
-    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
     builder.Services.AddScoped<IItemRepository, ItemRepository>();
     builder.Services.AddScoped<IImageRepository, ImageRepository>();

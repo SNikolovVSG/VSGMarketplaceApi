@@ -338,3 +338,4 @@ D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMar
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.genruntimeconfig.cache
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\ref\VSGMarketplaceApi.dll
 D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\bin\Debug\net6.0\NLog.Appsettings.Standard.dll
+D:\Resources\vsg api\VSGMarketplaceApi\VSGMarketplaceApi\obj\Debug\net6.0\VSGMarketplaceApi.MvcApplicationPartsAssemblyInfo.cs

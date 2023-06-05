@@ -50,7 +50,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectAllItemsSQL = "SELECT * FROM Items";
+            string selectAllItemsSQL = "SELECT * FROM Items";
             var items = await connection.QueryAsync<Item>(selectAllItemsSQL);
 
             return items;
@@ -60,8 +60,8 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectItemByCodeSQL = "SELECT * FROM Items WHERE id = @Id";
-            var item = await connection.QueryFirstOrDefaultAsync<Item>(selectItemByCodeSQL, new { Id = id });
+            string selectItemByCodeSQL = "SELECT * FROM Items WHERE id = @Id";
+            Item item = await connection.QueryFirstOrDefaultAsync<Item>(selectItemByCodeSQL, new { Id = id });
 
             if (item == null || item.QuantityForSale <= 0) { return null; }
 
@@ -72,8 +72,8 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectAllMarketplaceItemsSQL = "SELECT * FROM Items WHERE quantityForSale > 0";
-            var items = await connection.QueryAsync<Item>(selectAllMarketplaceItemsSQL);
+            string selectAllMarketplaceItemsSQL = "SELECT * FROM Items WHERE quantityForSale > 0";
+            IEnumerable<Item> items = await connection.QueryAsync<Item>(selectAllMarketplaceItemsSQL);
 
             return items;
         }

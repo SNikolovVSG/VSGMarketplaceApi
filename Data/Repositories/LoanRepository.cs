@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Data.Models;
 using Data.Repositories.Interfaces;
-using Data.ViewModels;
 using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 
@@ -30,7 +29,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var allLoansSQL = "SELECT * FROM Loans";
+            string allLoansSQL = "SELECT * FROM Loans";
             var allLoans = await connection.QueryAsync<Loan>(allLoansSQL);
 
             return allLoans.ToArray();
@@ -40,7 +39,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var allLoansByUserEmailSQL = "SELECT * FROM Loans WHERE orderedBy = @UserEmail";
+            string allLoansByUserEmailSQL = "SELECT * FROM Loans WHERE orderedBy = @UserEmail";
             var loans = await connection.QueryAsync<Loan>(allLoansByUserEmailSQL, new { UserEmail = userEmail });
 
             return loans.ToArray();
@@ -50,8 +49,16 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var returnLoanSQL = "UPDATE Loans SET loanEndDate = @LoanEndDate WHERE Id = @Id";
-            return await connection.ExecuteAsync(returnLoanSQL, new { LoanEndDate = DateTime.Now ,Id = loanId });
+            string returnLoanSQL = "UPDATE Loans SET loanEndDate = @LoanEndDate WHERE Id = @Id"; 
+            return await connection.ExecuteAsync(returnLoanSQL, new { LoanEndDate = DateTime.Now, Id = loanId });
+        }
+
+        public async Task<string> GetUserEmailByLoanId(int loanId)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            string getUserEmailByLoanIdSQL = "SELECT OrderedBy FROM Loans WHERE Id = @Id";
+            return await connection.QueryFirstAsync<string>(getUserEmailByLoanIdSQL, new { Id = loanId });
         }
     }
 }

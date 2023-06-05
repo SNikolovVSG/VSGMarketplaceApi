@@ -24,5 +24,7 @@
 
         public static readonly string[] ItemLocations = new string[] { "Home", "Veliko Tarnovo", "Plovdiv" };
         public static readonly string[] ItemCategories = new string[] { "Laptops", "Peripherals", "Furniture", "Misc" };
+        
+        public static object LOANS_CACHE_KEY = "Loans";
     }
 }

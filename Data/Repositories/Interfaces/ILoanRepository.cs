@@ -11,5 +11,7 @@ namespace Data.Repositories.Interfaces
         public Task<int> ReturnLoanAsync(int loanId);
 
         public Task<int> CreateLoanAsync(Loan loan);
+
+        Task<string> GetUserEmailByLoanId(int loanId);
     }
 }

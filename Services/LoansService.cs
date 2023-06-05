@@ -2,9 +2,8 @@
 using Data.Repositories.Interfaces;
 using Data.ViewModels;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Services.Interfaces;
-using System.Linq;
 using System.Transactions;
 
 namespace Services
@@ -14,36 +13,62 @@ namespace Services
         private readonly ILoanRepository loanRepository;
         private readonly IItemRepository itemRepository;
         private readonly IValidator<Loan> validator;
+        private IMemoryCache memoryCache;
 
-        private HttpContextAccessor httpContextAccessor;
-
-        public LoansService(ILoanRepository loanRepository, IValidator<Loan> validator, IItemRepository itemRepository)
+        public LoansService(ILoanRepository loanRepository, IValidator<Loan> validator, IItemRepository itemRepository, IMemoryCache memoryCache)
         {
             this.loanRepository = loanRepository;
             this.validator = validator;
             this.itemRepository = itemRepository;
-
-            this.httpContextAccessor = new HttpContextAccessor();
+            this.memoryCache = memoryCache;
         }
 
         public async Task<List<KeyValuePair<string, int>>> GetAllLoansAsync()
         {
+            if (memoryCache.TryGetValue(Constants.LOANS_CACHE_KEY, out List<KeyValuePair<string, int>> loans))
+            {
+                return loans;
+            }
+
             var allLoansArray = await this.loanRepository.GetAllLoansAsync();
 
             var emailsAndLoans = allLoansArray.GroupBy(x => x.OrderedBy);
-            var list = new List<KeyValuePair<string, int>>();
+            var outputLoans = new List<KeyValuePair<string, int>>();
 
             foreach (var item in emailsAndLoans)
             {
-                list.Add(new KeyValuePair<string, int>(item.Key, item.Count()));
+                outputLoans.Add(new KeyValuePair<string, int>(item.Key, item.Count()));
             }
+            
+            var options = new MemoryCacheEntryOptions()
+            {
+                AbsoluteExpiration = DateTime.Now.AddMinutes(5),
+                SlidingExpiration = TimeSpan.FromMinutes(2)
+            };
 
-            return list;
+            memoryCache.Set(Constants.INVENTORY_ITEMS_CACHE_KEY, outputLoans, options);
+
+            return outputLoans;
         }
 
         public async Task<Loan[]> GetMyLoansAsync(string userEmail)
         {
-            return await this.loanRepository.GetLoansByUserEmailAsync(userEmail);
+            if (memoryCache.TryGetValue(Constants.LOANS_CACHE_KEY + userEmail, out Loan[] myLoans))
+            {
+                return myLoans;
+            }
+
+            Loan[] outputLoans = await this.loanRepository.GetLoansByUserEmailAsync(userEmail);
+
+            var options = new MemoryCacheEntryOptions()
+            {
+                AbsoluteExpiration = DateTime.Now.AddMinutes(5),
+                SlidingExpiration = TimeSpan.FromMinutes(2)
+            };
+
+            memoryCache.Set(Constants.LOANS_CACHE_KEY + userEmail, outputLoans, options);
+
+            return outputLoans;
         }
 
         public async Task LoanAsync(int itemId, CreateLoanViewModel input)
@@ -79,6 +104,10 @@ namespace Services
                 transactionScope.Complete();
                 transactionScope.Dispose();
             }
+
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.LOANS_CACHE_KEY);
+            memoryCache.Remove(Constants.LOANS_CACHE_KEY + input.OrderedBy);
         }
 
         public async Task ReturnLoan(int loanId)
@@ -89,6 +118,12 @@ namespace Services
             {
                 throw new Exception("Zero changes");
             }
+
+            string userEmail = await this.loanRepository.GetUserEmailByLoanId(loanId);
+
+            memoryCache.Remove(Constants.INVENTORY_ITEMS_CACHE_KEY);
+            memoryCache.Remove(Constants.LOANS_CACHE_KEY);
+            memoryCache.Remove(Constants.LOANS_CACHE_KEY + userEmail);
         }
     }
 }

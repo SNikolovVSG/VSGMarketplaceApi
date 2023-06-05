@@ -19,12 +19,12 @@ namespace Data.Repositories
 
         public async Task<string> BuyAsync(Order order, Item item)
         {
-            var addOrderSQL =
+            string addOrderSQL =
                 "INSERT INTO Orders (ItemId, ItemCode, Location, Name, Quantity, OrderPrice, OrderedBy, OrderDate, Status, IsDeleted) VALUES (@ItemId, @ItemCode, @Location, @Name, @Quantity, @OrderPrice, @OrderedBy, @OrderDate, @Status, @IsDeleted)";
 
-            var updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE Id = @ItemId";
+            string updateItemQuantitySQL = "UPDATE Items SET quantityForSale = @Count WHERE Id = @ItemId";
 
-            var updatedCount = item.QuantityForSale - order.Quantity;
+            int updatedCount = item.QuantityForSale - order.Quantity;
 
             using var connection = new SqlConnection(connectionString);
 
@@ -87,7 +87,7 @@ namespace Data.Repositories
             int changesByItemsQuantity = 0;
             using var connection = new SqlConnection(connectionString);
 
-            var deleteOrderSQL = "UPDATE ORDERS SET IsDeleted = 1 WHERE Id = @Id";
+            string deleteOrderSQL = "UPDATE ORDERS SET IsDeleted = 1 WHERE Id = @Id";
 
             int changesByOrderDelete = await connection.ExecuteAsync(deleteOrderSQL, new { Id = id });
 
@@ -98,7 +98,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var allPendingOrdersSQL = "SELECT * FROM Orders WHERE status = @Pending AND IsDeleted = 0";
+            string allPendingOrdersSQL = "SELECT * FROM Orders WHERE status = @Pending AND IsDeleted = 0";
             var orders = await connection.QueryAsync<Order>(allPendingOrdersSQL, new { Constants.Pending });
             return orders;
         }
@@ -133,14 +133,14 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            var selectItemByCode = "SELECT * FROM Items WHERE Id = @Id";
-            var item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Id = order.ItemId });
+            string selectItemByCode = "SELECT * FROM Items WHERE Id = @Id";
+            Item item = await connection.QueryFirstAsync<Item>(selectItemByCode, new { Id = order.ItemId });
 
             if (item == null) { throw new Exception("Invalid item Code"); }
 
             item.QuantityForSale += order.Quantity;
 
-            var updateItemQuantitySQL = "UPDATE Items SET QuantityForSale = @QuantityForSale WHERE Id = @Id";
+            string updateItemQuantitySQL = "UPDATE Items SET QuantityForSale = @QuantityForSale WHERE Id = @Id";
             int changesByItemsQuantity = await connection.ExecuteAsync(updateItemQuantitySQL, item);
 
             return Constants.Ok;
