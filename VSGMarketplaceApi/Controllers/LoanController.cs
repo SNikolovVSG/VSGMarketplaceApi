@@ -36,7 +36,7 @@ namespace VSGMarketplaceApi.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpGet("~/LentItems")]
-        public async Task<ActionResult<List<KeyValuePair<string,int>>>> LentItems()
+        public async Task<ActionResult<List<LentItemViewModel>>> LentItems()
         {
             var loans = await this.loansService.GetAllLoansAsync();
 

@@ -2,6 +2,7 @@
 using Data.Repositories.Interfaces;
 using Data.ViewModels;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Services.Interfaces;
 using System.Transactions;
@@ -15,31 +16,35 @@ namespace Services
         private readonly IValidator<Loan> validator;
         private IMemoryCache memoryCache;
 
+        private HttpContextAccessor httpContextAccessor;
+
         public LoansService(ILoanRepository loanRepository, IValidator<Loan> validator, IItemRepository itemRepository, IMemoryCache memoryCache)
         {
             this.loanRepository = loanRepository;
             this.validator = validator;
             this.itemRepository = itemRepository;
             this.memoryCache = memoryCache;
+
+            this.httpContextAccessor = new HttpContextAccessor();
         }
 
-        public async Task<List<KeyValuePair<string, int>>> GetAllLoansAsync()
+        public async Task<List<LentItemViewModel>> GetAllLoansAsync()
         {
-            if (memoryCache.TryGetValue(Constants.LOANS_CACHE_KEY, out List<KeyValuePair<string, int>> loans))
+            if (memoryCache.TryGetValue(Constants.LOANS_CACHE_KEY, out List<LentItemViewModel> loans))
             {
                 return loans;
             }
 
-            var allLoansArray = await this.loanRepository.GetAllLoansAsync();
+            Loan[] allLoansArray = await this.loanRepository.GetAllLoansAsync();
 
             var emailsAndLoans = allLoansArray.GroupBy(x => x.OrderedBy);
-            var outputLoans = new List<KeyValuePair<string, int>>();
+            List<LentItemViewModel> outputLoans = new List<LentItemViewModel>();
 
             foreach (var item in emailsAndLoans)
             {
-                outputLoans.Add(new KeyValuePair<string, int>(item.Key, item.Count()));
+                outputLoans.Add(new LentItemViewModel { Email = item.Key, Count = item.Count() });
             }
-            
+
             var options = new MemoryCacheEntryOptions()
             {
                 AbsoluteExpiration = DateTime.Now.AddMinutes(5),
@@ -53,6 +58,16 @@ namespace Services
 
         public async Task<Loan[]> GetMyLoansAsync(string userEmail)
         {
+            var email = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
+
+            if (email != userEmail)
+            {
+                if (!httpContextAccessor.HttpContext.User.Claims.Any(x => x.Value == Constants.AdminGroup))
+                {
+                    throw new Exception("You are not an admin!");
+                };
+            }
+
             if (memoryCache.TryGetValue(Constants.LOANS_CACHE_KEY + userEmail, out Loan[] myLoans))
             {
                 return myLoans;

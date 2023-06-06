@@ -9,7 +9,7 @@ namespace Services.Interfaces
 
         public Task<Loan[]> GetMyLoansAsync(string userId);
 
-        public Task<List<KeyValuePair<string, int>>> GetAllLoansAsync();
+        public Task<List<LentItemViewModel>> GetAllLoansAsync();
 
         public Task ReturnLoan(int loanId);
     }
