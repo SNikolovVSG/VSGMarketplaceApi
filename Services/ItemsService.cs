@@ -212,6 +212,11 @@ namespace Services
                 throw new Exception("There are pending orders for this item and the quantity of them is bigger than the input quantity!");
             }
 
+            if (int.Parse(inputItem.AvailableQuantity) + int.Parse(inputItem.QuantityForSale) > int.Parse(inputItem.Quantity))
+            {
+                throw new Exception("Item available quantity + quantity for sale can't be bigger than item quantity!");
+            }
+
             switch (inputItem.ImageChanges)
             {
                 case false:

@@ -23,7 +23,7 @@ namespace Data.Repositories
         public async Task<string> AddAsync(Item item)
         {
             using var connection = new SqlConnection(connectionString);
-            string addItemSQL = "INSERT INTO Items (code, name, price, category, quantity, quantityForSale, description, location, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @Description, @Location, @ImageURL, @ImagePublicId);";
+            string addItemSQL = "INSERT INTO Items (code, name, price, category, quantity, quantityForSale, availableQuantity, description, location, imageURL, imagePublicId) VALUES (@Code, @Name, @Price, @Category, @Quantity, @QuantityForSale, @AvailableQuantity, @Description, @Location, @ImageURL, @ImagePublicId);";
 
             int changesByAddingItem = await connection.ExecuteAsync(addItemSQL, item);
 
@@ -82,7 +82,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location, imageURL = @ImageURL, imagePublicId = @ImagePublicId WHERE Id = @Id";
+            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, availableQuantity = @AvailableQuantity, description = @Description, location = @Location, imageURL = @ImageURL, imagePublicId = @ImagePublicId WHERE Id = @Id";
             int result = await connection.ExecuteAsync
                 (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.ImageURL, item.ImagePublicId, item.Location, Id = id });
 
@@ -93,7 +93,7 @@ namespace Data.Repositories
         {
             using var connection = new SqlConnection(connectionString);
 
-            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, description = @Description, location = @Location WHERE id = @Id";
+            string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, availableQuantity = @AvailableQuantity, description = @Description, location = @Location WHERE id = @Id";
             int result = await connection.ExecuteAsync
                 (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.Location, Id = id });
 
