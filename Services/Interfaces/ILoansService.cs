@@ -11,6 +11,6 @@ namespace Services.Interfaces
 
         public Task<List<LentItemViewModel>> GetAllLoansAsync();
 
-        public Task ReturnLoan(int loanId);
+        public Task ReturnLoanAsync(int loanId);
     }
 }

@@ -60,7 +60,7 @@ namespace Services
         {
             var email = httpContextAccessor.HttpContext.User.Claims.First(x => x.Value.Contains("vsgbg.com")).Value;
 
-            if (email != userEmail)
+            if (email.ToLower() != userEmail)
             {
                 if (!httpContextAccessor.HttpContext.User.Claims.Any(x => x.Value == Constants.AdminGroup))
                 {
@@ -91,7 +91,7 @@ namespace Services
             Loan loan = new Loan
             {
                 LoanStartDate = DateTime.Now,
-                OrderedBy = input.OrderedBy,
+                OrderedBy = input.OrderedBy.ToLower(), //remove when add asure accounts
                 Quantity = int.Parse(input.Quantity),
                 LoanEndDate = null,
                 ItemId = itemId,
@@ -125,7 +125,7 @@ namespace Services
             memoryCache.Remove(Constants.LOANS_CACHE_KEY + input.OrderedBy);
         }
 
-        public async Task ReturnLoan(int loanId)
+        public async Task ReturnLoanAsync(int loanId)
         {
             int changes = await this.loanRepository.ReturnLoanAsync(loanId);
 

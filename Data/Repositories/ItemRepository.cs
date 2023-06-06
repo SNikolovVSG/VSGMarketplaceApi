@@ -84,7 +84,7 @@ namespace Data.Repositories
 
             string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, availableQuantity = @AvailableQuantity, description = @Description, location = @Location, imageURL = @ImageURL, imagePublicId = @ImagePublicId WHERE Id = @Id";
             int result = await connection.ExecuteAsync
-                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.ImageURL, item.ImagePublicId, item.Location, Id = id });
+                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.AvailableQuantity, item.Description, item.ImageURL, item.ImagePublicId, item.Location, Id = id });
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
@@ -95,7 +95,7 @@ namespace Data.Repositories
 
             string updateItemSQL = $"UPDATE Items SET code = @Code, name = @Name, price = @Price, category = @Category, quantity = @Quantity, quantityForSale = @QuantityForSale, availableQuantity = @AvailableQuantity, description = @Description, location = @Location WHERE id = @Id";
             int result = await connection.ExecuteAsync
-                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.Description, item.Location, Id = id });
+                (updateItemSQL, new { item.Code, item.Name, item.Price, item.Category, item.Quantity, item.QuantityForSale, item.AvailableQuantity, item.Description, item.Location, Id = id });
 
             return result > 0 ? Constants.Ok : Constants.DatabaseError;
         }
@@ -129,7 +129,7 @@ namespace Data.Repositories
             string getQuantitySQL = "SELECT Quantity FROM Orders WHERE ItemId = @ItemId AND Status = @PendingStatus AND IsDeleted = 0";
 
             var quantities = await connection.QueryAsync<int>(getQuantitySQL, new { itemId, PendingStatus = Constants.Pending });
-         
+
             int quantity = 0;
 
             foreach (var item in quantities) { quantity += item; }

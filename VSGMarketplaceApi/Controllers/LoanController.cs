@@ -29,7 +29,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/MyLoans/{email}/")]
         public async Task<ActionResult<Loan[]>> MyLoans([FromRoute] string email)
         {
-            var loans = await this.loansService.GetMyLoansAsync(email);
+            var loans = await this.loansService.GetMyLoansAsync(email.ToLower()); //remove when added azure accounts
 
             return Ok(loans);
         }
@@ -47,7 +47,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpPut("~/LentItems/Return/{id}")]
         public async Task<IActionResult> Return([FromRoute] int id)
         {
-            await this.loansService.ReturnLoan(id);
+            await this.loansService.ReturnLoanAsync(id);
 
             return Ok();
         }
