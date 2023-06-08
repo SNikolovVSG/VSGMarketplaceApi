@@ -16,7 +16,7 @@ using Services;
 using Services.Interfaces;
 using Helpers.Validators;
 
-//TODO: Test loan cache 
+
 var logger = LogManager.Setup().LoadConfigurationFromAssemblyResource(Assembly.GetEntryAssembly(), "nlog.config").GetCurrentClassLogger();
 try
 {

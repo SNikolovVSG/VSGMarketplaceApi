@@ -35,8 +35,8 @@ namespace Data.Migrations
                    AvailableQuantity = 13,
                    Description = "Description",
                    Location = "Veliko Tarnovo",
-                   ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1683809132/69642aa9-d6fb-421f-96b4-6873a06ee26b.jpg",
-                   ImagePublicId = "69642aa9-d6fb-421f-96b4-6873a06ee26b",
+                   ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1686207523/54c3d069-39f1-4063-8250-12446c4609ac.jpg",
+                   ImagePublicId = "54c3d069-39f1-4063-8250-12446c4609ac",
                });
 
             Insert.IntoTable("Items")
@@ -50,8 +50,8 @@ namespace Data.Migrations
                     QuantityForSale = 17,
                     AvailableQuantity = 10,
                     Description = "Second Description",
-                    ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1683810267/e51e0a72-6f69-4f8d-a594-1ebf9ca19e76.jpg",
-                    ImagePublicId = "e51e0a72-6f69-4f8d-a594-1ebf9ca19e76",
+                    ImageURL = "https://res.cloudinary.com/dd4yoo4sl/image/upload/v1686207560/0b70a24e-c82e-4e9a-83da-2e8c63031769.jpg",
+                    ImagePublicId = "0b70a24e-c82e-4e9a-83da-2e8c63031769",
                     Location = "Plovdiv"
                 });
         }

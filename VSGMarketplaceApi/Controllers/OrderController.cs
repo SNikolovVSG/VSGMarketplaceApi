@@ -27,7 +27,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/MyOrders")]
         public async Task<ActionResult<List<MyOrdersViewModel>>> MyOrders()
         {
-            var result = await this.ordersService.GetByUserEmail();
+            IEnumerable<MyOrdersViewModel> result = await this.ordersService.GetByUserEmail();
 
             return Ok(result);
         }
@@ -44,7 +44,7 @@ namespace VSGMarketplaceApi.Controllers
         [HttpGet("~/PendingOrders")]
         public async Task<ActionResult<List<PendingOrderViewModel>>> PendingOrders()
         {
-            var orders = await this.ordersService.GetAllPendingOrdersAsync();
+            IEnumerable<PendingOrderViewModel> orders = await this.ordersService.GetAllPendingOrdersAsync();
             
             return Ok(orders);
         }
